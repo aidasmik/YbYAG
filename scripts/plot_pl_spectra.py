@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PL_DIR = ROOT / "PL"
 CLEAN_DIR = ROOT / "data" / "pl"
 FIGURE_PATH = ROOT / "figures" / "YbYAG_photoluminescence.png"
+COMBINED_FIGURE_PATH = ROOT / "figures" / "YbYAG_combined_spectra.png"
 ABSORBANCE_PATH = ROOT / "YbYag_ABS.csv"
 REFLECTION_DIR = ROOT / "data" / "reflection"
 
@@ -31,13 +32,6 @@ COLORS = {
     "10% Yb": "#D55E00",
     "15% Yb": "#009E73",
 }
-
-SIGNAL_COLORS = {
-    "PL emission": "#0072B2",
-    "Absorbance": "#D55E00",
-    "Reflection": "#009E73",
-}
-
 
 def parse_number(value):
     value = value.strip()
@@ -124,19 +118,6 @@ def load_higher_reflection_sides():
     return spectra, selected_sides
 
 
-def normalize_in_range(values, lower=950, upper=1125):
-    wavelength = values[:, 0]
-    signal = values[:, 1]
-    selected = (wavelength >= lower) & (wavelength <= upper)
-    wavelength = wavelength[selected]
-    signal = signal[selected]
-    signal = signal - np.min(signal)
-    maximum = np.max(signal)
-    if maximum > 0:
-        signal = signal / maximum
-    return wavelength, signal
-
-
 def write_clean_csv(label, values):
     output = CLEAN_DIR / f"{label.split('%')[0]}pct_Yb_PL_clean.csv"
     with output.open("w", newline="", encoding="utf-8") as handle:
@@ -152,73 +133,93 @@ def write_clean_csv(label, values):
         writer.writerows(values)
 
 
-def plot(pl_spectra, absorbance, reflection, reflection_sides):
-    figure, axes = plt.subplots(2, 2, figsize=(12, 9))
+def plot_pl_panels(pl_spectra):
+    figure, axes = plt.subplots(1, 3, figsize=(15, 4.8))
 
-    for label, values in pl_spectra.items():
+    for axis, (label, values) in zip(axes, pl_spectra.items()):
         wavelength = values[:, 0]
         intensity = values[:, 3]
-        axes[0, 0].plot(
+        axis.plot(
             wavelength,
             intensity,
             color=COLORS[label],
             linewidth=1.8,
-            label=label,
         )
-
-    axes[0, 0].set(
-        title="Response-corrected photoluminescence",
-        xlabel="Wavelength (nm)",
-        ylabel="PL intensity (arb. u.)",
-        xlim=(950, 1125),
-    )
-    axes[0, 0].legend()
-
-    overlay_axes = (axes[0, 1], axes[1, 0], axes[1, 1])
-    for axis, label in zip(overlay_axes, SAMPLES):
-        pl_values = np.column_stack(
-            (pl_spectra[label][:, 0], pl_spectra[label][:, 3])
-        )
-        datasets = (
-            ("PL emission", pl_values),
-            ("Absorbance", absorbance[label]),
-            ("Reflection", reflection[label]),
-        )
-        for signal_label, values in datasets:
-            wavelength, signal = normalize_in_range(values)
-            legend_label = signal_label
-            if signal_label == "Reflection":
-                legend_label += f" (side {reflection_sides[label]})"
-            axis.plot(
-                wavelength,
-                signal,
-                color=SIGNAL_COLORS[signal_label],
-                linewidth=1.7,
-                label=legend_label,
-            )
         axis.set(
             title=label,
             xlabel="Wavelength (nm)",
-            ylabel="Normalized signal",
-            xlim=(950, 1125),
-            ylim=(-0.03, 1.05),
+            ylabel="PL intensity (arb. u.)",
+            xlim=(950, 1140),
         )
-        axis.legend(fontsize=8)
 
-    figure.suptitle(
-        "Yb:YAG emission, absorbance, and reflection "
-        "(PL excitation: 942 nm)"
-    )
+    figure.suptitle("Yb:YAG photoluminescence under 942 nm excitation")
     figure.text(
         0.5,
         0.008,
-        "Overlays are independently normalized for spectral-position comparison. "
         "Absolute PL intensities reflect the recorded measurement settings.",
         ha="center",
         fontsize=8,
     )
     figure.tight_layout(rect=(0, 0.035, 1, 0.97))
     figure.savefig(FIGURE_PATH, dpi=200, bbox_inches="tight")
+    plt.close(figure)
+
+
+def plot_combined_spectra(
+    pl_spectra, absorbance, reflection, reflection_sides
+):
+    figure, axes = plt.subplots(3, 1, figsize=(12, 11))
+
+    for label in SAMPLES:
+        values = pl_spectra[label]
+        axes[0].plot(
+            values[:, 0],
+            values[:, 3],
+            color=COLORS[label],
+            linewidth=1.8,
+            label=label,
+        )
+
+        values = reflection[label]
+        axes[1].plot(
+            values[:, 0],
+            values[:, 1],
+            color=COLORS[label],
+            linewidth=1.6,
+            label=f"{label} (side {reflection_sides[label]})",
+        )
+
+        values = absorbance[label]
+        axes[2].plot(
+            values[:, 0],
+            values[:, 1],
+            color=COLORS[label],
+            linewidth=1.6,
+            label=label,
+        )
+
+    axes[0].set(
+        title="Photoluminescence",
+        ylabel="PL intensity (arb. u.)",
+        xlim=(950, 1140),
+    )
+    axes[1].set(
+        title="Reflection",
+        ylabel="Reflection (%)",
+        xlim=(800, 1200),
+    )
+    axes[2].set(
+        title="Absorbance",
+        xlabel="Wavelength (nm)",
+        ylabel="Absorbance",
+        xlim=(800, 1200),
+    )
+    for axis in axes:
+        axis.legend(ncol=3, fontsize=9)
+
+    figure.suptitle("Yb:YAG measured spectra")
+    figure.tight_layout(rect=(0, 0, 1, 0.98))
+    figure.savefig(COMBINED_FIGURE_PATH, dpi=200, bbox_inches="tight")
     plt.close(figure)
 
 
@@ -235,7 +236,10 @@ def main():
 
     absorbance = load_absorbance(ABSORBANCE_PATH)
     reflection, reflection_sides = load_higher_reflection_sides()
-    plot(pl_spectra, absorbance, reflection, reflection_sides)
+    plot_pl_panels(pl_spectra)
+    plot_combined_spectra(
+        pl_spectra, absorbance, reflection, reflection_sides
+    )
 
 
 if __name__ == "__main__":

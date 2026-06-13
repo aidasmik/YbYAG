@@ -24,4 +24,8 @@ Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/
 
 ![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
 
-PL emission is overlaid with normalized absorbance and reflection for each Yb concentration.
+PL spectra are shown separately for each Yb concentration.
+
+![Combined measured spectra](figures/YbYAG_combined_spectra.png)
+
+Full measured PL, reflection, and absorbance spectra for 5%, 10%, and 15% Yb.
