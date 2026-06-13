@@ -17,3 +17,15 @@
 The published 939.4 and 968.93 nm absorption peaks are unresolved in the broad high-absorbance plateau.
 
 Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/10.3390/ma11050837).
+
+## Photoluminescence
+
+[PL plotting script](scripts/plot_pl_spectra.py)
+
+![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
+
+PL spectra for all Yb concentrations are shown on the same plot.
+
+![Combined measured spectra](figures/YbYAG_combined_spectra.png)
+
+Full measured PL, reflection, and absorbance spectra on an aligned wavelength axis.
