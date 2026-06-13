@@ -17,3 +17,11 @@
 The published 939.4 and 968.93 nm absorption peaks are unresolved in the broad high-absorbance plateau.
 
 Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/10.3390/ma11050837).
+
+## Photoluminescence
+
+[PL plotting script](scripts/plot_pl_spectra.py)
+
+![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
+
+The 1029-1030 nm peak remains stable with 11-12 nm FWHM. The 969/1030 nm intensity ratio decreases with Yb concentration, consistent with stronger reabsorption near the 968.93 nm zero line.
