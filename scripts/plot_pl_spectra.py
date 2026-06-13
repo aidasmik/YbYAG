@@ -134,9 +134,9 @@ def write_clean_csv(label, values):
 
 
 def plot_pl_panels(pl_spectra):
-    figure, axes = plt.subplots(1, 3, figsize=(15, 4.8))
+    figure, axis = plt.subplots(figsize=(12, 6))
 
-    for axis, (label, values) in zip(axes, pl_spectra.items()):
+    for label, values in pl_spectra.items():
         wavelength = values[:, 0]
         intensity = values[:, 3]
         axis.plot(
@@ -144,13 +144,14 @@ def plot_pl_panels(pl_spectra):
             intensity,
             color=COLORS[label],
             linewidth=1.8,
+            label=label,
         )
-        axis.set(
-            title=label,
-            xlabel="Wavelength (nm)",
-            ylabel="PL intensity (arb. u.)",
-            xlim=(950, 1140),
-        )
+    axis.set(
+        xlabel="Wavelength (nm)",
+        ylabel="PL intensity (arb. u.)",
+        xlim=(950, 1140),
+    )
+    axis.legend()
 
     figure.suptitle("Yb:YAG photoluminescence under 942 nm excitation")
     figure.text(
@@ -168,7 +169,7 @@ def plot_pl_panels(pl_spectra):
 def plot_combined_spectra(
     pl_spectra, absorbance, reflection, reflection_sides
 ):
-    figure, axes = plt.subplots(3, 1, figsize=(12, 11))
+    figure, axes = plt.subplots(3, 1, figsize=(12, 11), sharex=True)
 
     for label in SAMPLES:
         values = pl_spectra[label]
@@ -201,19 +202,17 @@ def plot_combined_spectra(
     axes[0].set(
         title="Photoluminescence",
         ylabel="PL intensity (arb. u.)",
-        xlim=(950, 1140),
     )
     axes[1].set(
         title="Reflection",
         ylabel="Reflection (%)",
-        xlim=(800, 1200),
     )
     axes[2].set(
         title="Absorbance",
         xlabel="Wavelength (nm)",
         ylabel="Absorbance",
-        xlim=(800, 1200),
     )
+    axes[2].set_xlim(800, 1200)
     for axis in axes:
         axis.legend(ncol=3, fontsize=9)
 
