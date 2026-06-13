@@ -24,4 +24,4 @@ Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/
 
 ![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
 
-The 1029-1030 nm peak remains stable with 11-12 nm FWHM. The 969/1030 nm intensity ratio decreases with Yb concentration, consistent with stronger reabsorption near the 968.93 nm zero line.
+PL emission is overlaid with normalized absorbance and reflection for each Yb concentration.
