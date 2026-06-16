@@ -32,7 +32,7 @@ PL spectra for all Yb concentrations are shown on the same plot.
 
 ![Yb:YAG temperature-dependent photoluminescence](figures/YbYAG_temperature_photoluminescence.png)
 
-Temperature-dependent PL spectra are shown as corrected intensity and peak-normalized intensity.
+Temperature-dependent PL spectra are plotted from the Intensity column.
 
 ![Combined measured spectra](figures/YbYAG_combined_spectra.png)
 

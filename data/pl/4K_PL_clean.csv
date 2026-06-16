@@ -1,4 +1,4 @@
-wavelength_nm,lamp_response,raw_pl_counts,corrected_pl_arb_u
+wavelength_nm,lamp_response,raw_pl_counts,intensity_arb_u
 965.0,1040.47214,2066.0,3.97127
 965.5,1045.8594,1526.0,2.91817
 966.0,1050.18618,1367.0,2.60335

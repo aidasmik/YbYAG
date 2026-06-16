@@ -87,12 +87,12 @@ def load_temperature_pl(path):
             if len(row) < 4:
                 continue
             try:
-                wavelength, response, raw, corrected = map(parse_number, row[:4])
+                wavelength, response, raw, intensity = map(parse_number, row[:4])
             except ValueError:
                 continue
-            if not np.all(np.isfinite((wavelength, response, raw, corrected))):
+            if not np.all(np.isfinite((wavelength, response, raw, intensity))):
                 continue
-            rows.append((wavelength, response, raw, corrected))
+            rows.append((wavelength, response, raw, intensity))
 
     values = np.asarray(rows)
     order = np.argsort(values[:, 0])
@@ -179,7 +179,7 @@ def write_temperature_clean_csv(label, values):
                 "wavelength_nm",
                 "lamp_response",
                 "raw_pl_counts",
-                "corrected_pl_arb_u",
+                "intensity_arb_u",
             ]
         )
         writer.writerows(values)
@@ -219,14 +219,14 @@ def plot_pl_panels(pl_spectra):
 
 
 def plot_temperature_pl(temp_spectra):
-    figure, axes = plt.subplots(2, 1, figsize=(12, 9), sharex=True)
+    figure, axis = plt.subplots(figsize=(12, 6))
 
     for label, values in temp_spectra.items():
         wavelength = values[:, 0]
         intensity = values[:, 3]
         color = TEMP_COLORS[label]
 
-        axes[0].plot(
+        axis.plot(
             wavelength,
             intensity,
             color=color,
@@ -234,31 +234,15 @@ def plot_temperature_pl(temp_spectra):
             label=label,
         )
 
-        peak = np.nanmax(intensity)
-        normalized = intensity / peak if peak else intensity
-        axes[1].plot(
-            wavelength,
-            normalized,
-            color=color,
-            linewidth=1.8,
-            label=label,
-        )
-
-    axes[0].set(
-        title="Corrected intensity",
-        ylabel="PL intensity (arb. u.)",
-    )
-    axes[1].set(
-        title="Peak-normalized intensity",
+    axis.set(
         xlabel="Wavelength (nm)",
-        ylabel="Normalized PL intensity",
+        ylabel="Intensity (arb. u.)",
         xlim=(965, 1255),
     )
-    for axis in axes:
-        axis.legend(ncol=5, frameon=True)
+    axis.legend(ncol=5, frameon=True)
 
-    figure.suptitle("Yb:YAG temperature-dependent photoluminescence")
-    figure.tight_layout(rect=(0, 0, 1, 0.97))
+    figure.suptitle("Yb:YAG temperature-dependent PL intensity")
+    figure.tight_layout(rect=(0, 0, 1, 0.95))
     figure.savefig(TEMP_FIGURE_PATH, dpi=200, bbox_inches="tight")
     plt.close(figure)
 
