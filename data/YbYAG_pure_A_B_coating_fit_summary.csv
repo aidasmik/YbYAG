@@ -1,0 +1,3 @@
+sample,fit_window_nm,median_transmission_fraction,median_transmission_percent,absorbance_from_transmission,symmetric_surface_reflectance_fit,equivalent_symmetric_index,one_side_reflectance_fit_assuming_other_side_bare_yag,bare_yag_surface_reflectance_model,bare_yag_slab_transmission_model
+Pure sample A,1100-1200,0.8461405015801832,84.61405015801832,0.07255751640000001,0.0833411640598982,1.8117084502236276,0.0828260587651202,0.08385569109025062,0.8452641033680413
+Pure sample B,1100-1200,0.725531755089516,72.5531755089516,0.13934357459999996,0.15906299266932086,2.3268294980313264,0.22285933137515535,0.08385569109025062,0.8452641033680413

@@ -12,6 +12,16 @@
 
 ![Pure sample B offset to match sample A](figures/YbYAG_pure_A_B_offset_alignment.png)
 
+## Pure A/B coating fit
+
+[Coating fit script](scripts/fit_pure_ab_coating.py)
+
+![Pure sample A and B coating match fit](figures/YbYAG_pure_A_B_coating_fit.png)
+
+Fit summary: [data/YbYAG_pure_A_B_coating_fit_summary.csv](data/YbYAG_pure_A_B_coating_fit_summary.csv).
+
+Using the 1100-1200 nm baseline region, sample A matches an uncoated polished YAG slab. Sample B does not match a normal uncoated or AR-coated slab; the simplest optical fit is one bare YAG side plus one side with about 22.3% effective reflection/loss.
+
 ## Literature comparison
 
 [Comparison script](scripts/compare_with_literature.py)
