@@ -22,4 +22,3 @@ Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/
 
 ![Yb:YAG temperature-dependent photoluminescence](figures/YbYAG_temperature_photoluminescence.png)
 
-![Yb:YAG reflection measurements](figures/YbYAG_reflection.png)
