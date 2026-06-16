@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PL_DIR = ROOT / "PL"
 CLEAN_DIR = ROOT / "data" / "pl"
 FIGURE_PATH = ROOT / "figures" / "YbYAG_photoluminescence.png"
+TEMP_FIGURE_PATH = ROOT / "figures" / "YbYAG_temperature_photoluminescence.png"
 COMBINED_FIGURE_PATH = ROOT / "figures" / "YbYAG_combined_spectra.png"
 ABSORBANCE_PATH = ROOT / "YbYag_ABS.csv"
 REFLECTION_DIR = ROOT / "data" / "reflection"
@@ -19,6 +20,14 @@ SAMPLES = {
     "5% Yb": ("YbYag_5_PL.csv", 5, 200),
     "10% Yb": ("YbYag_10_PL.csv", 10, 1000),
     "15% Yb": ("YbYag_15_PL.csv", 15, 1000),
+}
+
+TEMPERATURE_SAMPLES = {
+    "4 K": "4K.csv",
+    "50 K": "50K.csv",
+    "100 K": "100K.csv",
+    "200 K": "200K.csv",
+    "300 K": "300K.csv",
 }
 
 REFLECTION_FILES = {
@@ -32,6 +41,15 @@ COLORS = {
     "10% Yb": "#D55E00",
     "15% Yb": "#009E73",
 }
+
+TEMP_COLORS = {
+    "4 K": "#332288",
+    "50 K": "#117733",
+    "100 K": "#44AA99",
+    "200 K": "#DDCC77",
+    "300 K": "#CC6677",
+}
+
 
 def parse_number(value):
     value = value.strip()
@@ -55,6 +73,22 @@ def load_pl(path, correction_scale):
                 response /= 1000
 
             corrected = raw / response * correction_scale
+            rows.append((wavelength, response, raw, corrected))
+
+    values = np.asarray(rows)
+    order = np.argsort(values[:, 0])
+    return values[order]
+
+
+def load_temperature_pl(path):
+    rows = []
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        for row in csv.reader(handle):
+            if len(row) < 4:
+                continue
+            wavelength, response, raw, corrected = map(parse_number, row[:4])
+            if not np.all(np.isfinite((wavelength, response, raw, corrected))):
+                continue
             rows.append((wavelength, response, raw, corrected))
 
     values = np.asarray(rows)
@@ -133,6 +167,21 @@ def write_clean_csv(label, values):
         writer.writerows(values)
 
 
+def write_temperature_clean_csv(label, values):
+    output = CLEAN_DIR / f"{label.replace(' ', '')}_PL_clean.csv"
+    with output.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(
+            [
+                "wavelength_nm",
+                "lamp_response",
+                "raw_pl_counts",
+                "corrected_pl_arb_u",
+            ]
+        )
+        writer.writerows(values)
+
+
 def plot_pl_panels(pl_spectra):
     figure, axis = plt.subplots(figsize=(12, 6))
 
@@ -163,6 +212,51 @@ def plot_pl_panels(pl_spectra):
     )
     figure.tight_layout(rect=(0, 0.035, 1, 0.97))
     figure.savefig(FIGURE_PATH, dpi=200, bbox_inches="tight")
+    plt.close(figure)
+
+
+def plot_temperature_pl(temp_spectra):
+    figure, axes = plt.subplots(2, 1, figsize=(12, 9), sharex=True)
+
+    for label, values in temp_spectra.items():
+        wavelength = values[:, 0]
+        intensity = values[:, 3]
+        color = TEMP_COLORS[label]
+
+        axes[0].plot(
+            wavelength,
+            intensity,
+            color=color,
+            linewidth=1.8,
+            label=label,
+        )
+
+        peak = np.nanmax(intensity)
+        normalized = intensity / peak if peak else intensity
+        axes[1].plot(
+            wavelength,
+            normalized,
+            color=color,
+            linewidth=1.8,
+            label=label,
+        )
+
+    axes[0].set(
+        title="Corrected intensity",
+        ylabel="PL intensity (arb. u.)",
+    )
+    axes[1].set(
+        title="Peak-normalized intensity",
+        xlabel="Wavelength (nm)",
+        ylabel="Normalized PL intensity",
+        xlim=(965, 1255),
+    )
+    for axis in axes:
+        axis.legend(ncol=5, frameon=True)
+
+    figure.suptitle("Yb:YAG temperature-dependent photoluminescence")
+    figure.tight_layout(rect=(0, 0, 1, 0.97))
+    figure.savefig(TEMP_FIGURE_PATH, dpi=200, bbox_inches="tight")
     plt.close(figure)
 
 
@@ -233,9 +327,20 @@ def main():
         pl_spectra[label] = values
         write_clean_csv(label, values)
 
+    temp_spectra = {}
+    for label, filename in TEMPERATURE_SAMPLES.items():
+        path = PL_DIR / filename
+        if not path.exists():
+            continue
+        values = load_temperature_pl(path)
+        temp_spectra[label] = values
+        write_temperature_clean_csv(label, values)
+
     absorbance = load_absorbance(ABSORBANCE_PATH)
     reflection, reflection_sides = load_higher_reflection_sides()
     plot_pl_panels(pl_spectra)
+    if temp_spectra:
+        plot_temperature_pl(temp_spectra)
     plot_combined_spectra(
         pl_spectra, absorbance, reflection, reflection_sides
     )

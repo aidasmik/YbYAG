@@ -30,6 +30,10 @@ Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/
 
 PL spectra for all Yb concentrations are shown on the same plot.
 
+![Yb:YAG temperature-dependent photoluminescence](figures/YbYAG_temperature_photoluminescence.png)
+
+Temperature-dependent PL spectra are shown as corrected intensity and peak-normalized intensity.
+
 ![Combined measured spectra](figures/YbYAG_combined_spectra.png)
 
 Full measured PL, reflection, and absorbance spectra on an aligned wavelength axis.
