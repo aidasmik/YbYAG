@@ -1,16 +1,22 @@
 # Yb:YAG
 
-[Reflection notebook](YbYAG_reflection.ipynb)
-
-![Yb:YAG reflection measurements](figures/YbYAG_reflection.png)
+## Optical spectra
 
 [Optical plotting script](scripts/plot_optical_spectra.py)
 
-![Transmission and absorbance](figures/YbYAG_transmission_absorbance.png)
+![Yb:YAG transmission spectra](figures/YbYAG_transmission.png)
 
-![Pure sample A and B transmission and absorbance comparison](figures/YbYAG_pure_A_B_abs_trans_comparison.png)
+![Yb:YAG absorbance spectra](figures/YbYAG_absorbance.png)
 
-![Pure sample B offset to match sample A](figures/YbYAG_pure_A_B_offset_alignment.png)
+![Yb:YAG transmission vs photon energy](figures/YbYAG_transmission_energy.png)
+
+![Pure sample A and B transmission](figures/YbYAG_pure_A_B_transmission.png)
+
+![Pure sample A and B absorbance](figures/YbYAG_pure_A_B_absorbance.png)
+
+![Pure sample B transmission offset to match A](figures/YbYAG_pure_A_B_transmission_offset_alignment.png)
+
+![Pure sample B absorbance offset to match A](figures/YbYAG_pure_A_B_absorbance_offset_alignment.png)
 
 ## Literature comparison
 
@@ -34,6 +40,8 @@ PL spectra for all Yb concentrations are shown on the same plot.
 
 Temperature-dependent PL spectra are plotted from the Intensity column.
 
-![Combined measured spectra](figures/YbYAG_combined_spectra.png)
+![Yb:YAG reflection measurements](figures/YbYAG_reflection.png)
 
-Full measured PL, reflection, and absorbance spectra on an aligned wavelength axis.
+![Yb:YAG doped sample absorbance](figures/YbYAG_doped_absorbance.png)
+
+Reflection and absorbance spectra are saved as separate figure files.

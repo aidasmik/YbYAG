@@ -40,6 +40,33 @@ LINESTYLES = {
 }
 
 
+def apply_academic_style():
+    plt.style.use("default")
+    plt.rcParams.update(
+        {
+            "figure.dpi": 120,
+            "savefig.dpi": 300,
+            "font.size": 10,
+            "axes.titlesize": 11,
+            "axes.labelsize": 10,
+            "legend.fontsize": 9,
+            "xtick.labelsize": 9,
+            "ytick.labelsize": 9,
+            "axes.linewidth": 0.9,
+            "axes.grid": True,
+            "grid.color": "#D9D9D9",
+            "grid.linewidth": 0.55,
+            "grid.alpha": 0.8,
+            "legend.frameon": False,
+        }
+    )
+
+
+def format_axis(axis):
+    axis.tick_params(direction="in", which="both", top=True, right=True)
+    axis.minorticks_on()
+
+
 def load_export(path):
     with path.open(newline="", encoding="utf-8-sig") as handle:
         rows = list(csv.reader(handle))
@@ -105,59 +132,68 @@ def add_energy_axis(axis, location="top"):
 
     energy_axis = axis.secondary_xaxis(location, functions=(transform, transform))
     energy_axis.set_xlabel("Photon energy (eV)")
+    energy_axis.tick_params(direction="in", which="both")
 
 
-def plot_overview(transmission, absorbance):
-    figure, axes = plt.subplots(2, 1, figsize=(12, 9), sharex=True)
+def plot_spectra(
+    spectra,
+    samples,
+    title,
+    ylabel,
+    output_path,
+    xlim=(800, 1200),
+    energy_axis=False,
+):
+    figure, axis = plt.subplots(figsize=(7.0, 4.5))
 
-    for sample in PLOT_SAMPLES:
-        wavelength, signal = transmission[sample]
-        axes[0].plot(
+    for sample in samples:
+        wavelength, signal = spectra[sample]
+        axis.plot(
             wavelength,
             signal,
             color=COLORS[sample],
             linestyle=LINESTYLES[sample],
-            linewidth=1.8,
+            linewidth=1.55,
             label=sample,
         )
 
-        wavelength, signal = absorbance[sample]
-        axes[1].plot(
-            wavelength,
-            signal,
-            color=COLORS[sample],
-            linestyle=LINESTYLES[sample],
-            linewidth=1.8,
-            label=sample,
-        )
-
-    axes[0].set(
-        title="Transmission",
-        ylabel="Transmission (%)",
-        xlim=(800, 1200),
-    )
-    axes[1].set(
-        title="Absorbance",
+    axis.set(
+        title=title,
         xlabel="Wavelength (nm)",
-        ylabel="Absorbance",
-        xlim=(800, 1200),
+        ylabel=ylabel,
+        xlim=xlim,
     )
-    axes[0].legend(ncol=3, frameon=True)
-    add_energy_axis(axes[0])
+    if energy_axis:
+        add_energy_axis(axis)
+    format_axis(axis)
+    axis.legend(ncol=2)
 
-    figure.suptitle("Yb:YAG optical spectra")
     figure.tight_layout()
-    figure.savefig(
-        FIGURES / "YbYAG_transmission_absorbance.png",
-        dpi=200,
-        bbox_inches="tight",
-    )
+    figure.savefig(output_path, bbox_inches="tight")
     plt.close(figure)
 
 
+def plot_overview(transmission, absorbance):
+    plot_spectra(
+        transmission,
+        PLOT_SAMPLES,
+        "Yb:YAG transmission spectra",
+        "Transmission (%)",
+        FIGURES / "YbYAG_transmission.png",
+        energy_axis=True,
+    )
+    plot_spectra(
+        absorbance,
+        PLOT_SAMPLES,
+        "Yb:YAG absorbance spectra",
+        "Absorbance",
+        FIGURES / "YbYAG_absorbance.png",
+    )
+
+
 def plot_transmission_only(transmission):
-    wavelength_figure, wavelength_axis = plt.subplots(figsize=(9, 5.4))
-    energy_figure, energy_axis = plt.subplots(figsize=(9, 5.4))
+    wavelength_figure, wavelength_axis = plt.subplots(figsize=(7.0, 4.5))
+    energy_figure, energy_axis = plt.subplots(figsize=(7.0, 4.5))
 
     for sample in PLOT_SAMPLES:
         wavelength, signal = transmission[sample]
@@ -166,9 +202,7 @@ def plot_transmission_only(transmission):
             signal,
             color=COLORS[sample],
             linestyle=LINESTYLES[sample],
-            marker="o",
-            markersize=2,
-            linewidth=1.3,
+            linewidth=1.45,
             label=sample.replace("% Yb", "%").replace("Pure sample ", ""),
         )
 
@@ -179,9 +213,7 @@ def plot_transmission_only(transmission):
             signal[order],
             color=COLORS[sample],
             linestyle=LINESTYLES[sample],
-            marker="o",
-            markersize=2,
-            linewidth=1.3,
+            linewidth=1.45,
             label=sample.replace("% Yb", "%").replace("Pure sample ", ""),
         )
 
@@ -195,6 +227,7 @@ def plot_transmission_only(transmission):
             ylabel="Transmission (%T)",
         )
         axis.legend(title="Sample")
+        format_axis(axis)
 
     wavelength_axis.set_xlim(780, 1220)
     energy_axis.set_xlim(1.0, 1.56)
@@ -202,13 +235,11 @@ def plot_transmission_only(transmission):
     wavelength_figure.tight_layout()
     energy_figure.tight_layout()
     wavelength_figure.savefig(
-        ROOT / "YbYAG_transmission_plot_points_small.png",
-        dpi=160,
+        FIGURES / "YbYAG_transmission_wavelength.png",
         bbox_inches="tight",
     )
     energy_figure.savefig(
-        ROOT / "YbYAG_transmission_plot_eV.png",
-        dpi=160,
+        FIGURES / "YbYAG_transmission_energy.png",
         bbox_inches="tight",
     )
     plt.close(wavelength_figure)
@@ -216,53 +247,22 @@ def plot_transmission_only(transmission):
 
 
 def plot_pure_ab_comparison(transmission, absorbance):
-    figure, axes = plt.subplots(2, 1, figsize=(11, 7.5), sharex=True)
     samples = ("Pure sample A", "Pure sample B")
-
-    for sample in samples:
-        wavelength, signal = transmission[sample]
-        axes[0].plot(
-            wavelength,
-            signal,
-            color=COLORS[sample],
-            linestyle=LINESTYLES[sample],
-            linewidth=2.0,
-            label=sample,
-        )
-
-        wavelength, signal = absorbance[sample]
-        axes[1].plot(
-            wavelength,
-            signal,
-            color=COLORS[sample],
-            linestyle=LINESTYLES[sample],
-            linewidth=2.0,
-            label=sample,
-        )
-
-    axes[0].set(
-        title="Transmission",
-        ylabel="Transmission (%)",
-        xlim=(800, 1200),
+    plot_spectra(
+        transmission,
+        samples,
+        "Pure Yb:YAG A/B transmission",
+        "Transmission (%)",
+        FIGURES / "YbYAG_pure_A_B_transmission.png",
+        energy_axis=True,
     )
-    axes[1].set(
-        title="Absorbance",
-        xlabel="Wavelength (nm)",
-        ylabel="Absorbance",
-        xlim=(800, 1200),
+    plot_spectra(
+        absorbance,
+        samples,
+        "Pure Yb:YAG A/B absorbance",
+        "Absorbance",
+        FIGURES / "YbYAG_pure_A_B_absorbance.png",
     )
-    for axis in axes:
-        axis.legend(frameon=True)
-    add_energy_axis(axes[0])
-
-    figure.suptitle("Pure Yb:YAG sample A vs B")
-    figure.tight_layout()
-    figure.savefig(
-        FIGURES / "YbYAG_pure_A_B_abs_trans_comparison.png",
-        dpi=200,
-        bbox_inches="tight",
-    )
-    plt.close(figure)
 
 
 def offset_to_match(reference, target):
@@ -281,27 +281,27 @@ def offset_to_match(reference, target):
 
 
 def plot_pure_ab_offset_alignment(transmission, absorbance):
-    figure, axes = plt.subplots(2, 1, figsize=(11, 7.5), sharex=True)
     panels = (
         (
-            axes[0],
             transmission["Pure sample A"],
             transmission["Pure sample B"],
-            "Transmission",
+            "Pure Yb:YAG B transmission offset to match A",
             "Transmission (%)",
             "percentage points",
+            FIGURES / "YbYAG_pure_A_B_transmission_offset_alignment.png",
         ),
         (
-            axes[1],
             absorbance["Pure sample A"],
             absorbance["Pure sample B"],
-            "Absorbance",
+            "Pure Yb:YAG B absorbance offset to match A",
             "Absorbance",
             "absorbance",
+            FIGURES / "YbYAG_pure_A_B_absorbance_offset_alignment.png",
         ),
     )
 
-    for axis, reference, target, title, ylabel, unit in panels:
+    for reference, target, title, ylabel, unit, output_path in panels:
+        figure, axis = plt.subplots(figsize=(7.0, 4.5))
         reference_wavelength, reference_signal = reference
         target_wavelength, target_signal = target
         shifted_wavelength, shifted_signal, offset = offset_to_match(reference, target)
@@ -328,43 +328,26 @@ def plot_pure_ab_offset_alignment(transmission, absorbance):
             shifted_signal,
             color=COLORS["Pure sample B"],
             linestyle=LINESTYLES["Pure sample B"],
-            linewidth=2.2,
+            linewidth=1.65,
             label="Pure sample B + offset",
         )
-        axis.text(
-            0.02,
-            0.92,
-            f"B offset to match A: {offset:+.4g} {unit}",
-            transform=axis.transAxes,
-            ha="left",
-            va="top",
-            fontsize=10,
-            bbox={
-                "boxstyle": "round,pad=0.3",
-                "facecolor": "white",
-                "edgecolor": "#999999",
-                "alpha": 0.88,
-            },
+        axis.set(
+            title=f"{title} ({offset:+.4g} {unit})",
+            xlabel="Wavelength (nm)",
+            ylabel=ylabel,
+            xlim=(800, 1200),
         )
-        axis.set(title=title, ylabel=ylabel, xlim=(800, 1200))
-        axis.legend(frameon=True, loc="best")
+        format_axis(axis)
+        axis.legend(loc="best")
 
-    axes[1].set_xlabel("Wavelength (nm)")
-    add_energy_axis(axes[0])
-
-    figure.suptitle("Pure Yb:YAG sample B offset to match sample A")
-    figure.tight_layout()
-    figure.savefig(
-        FIGURES / "YbYAG_pure_A_B_offset_alignment.png",
-        dpi=200,
-        bbox_inches="tight",
-    )
-    plt.close(figure)
+        figure.tight_layout()
+        figure.savefig(output_path, bbox_inches="tight")
+        plt.close(figure)
 
 
 def main():
     FIGURES.mkdir(parents=True, exist_ok=True)
-    plt.style.use("seaborn-v0_8-whitegrid")
+    apply_academic_style()
 
     transmission = load_export(ROOT / "YbYag_T.csv")
     absorbance = load_export(ROOT / "YbYag_ABS.csv")

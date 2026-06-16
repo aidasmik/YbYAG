@@ -6,13 +6,19 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+try:
+    from scripts.plot_optical_spectra import apply_academic_style, format_axis
+except ModuleNotFoundError:
+    from plot_optical_spectra import apply_academic_style, format_axis
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PL_DIR = ROOT / "PL"
 CLEAN_DIR = ROOT / "data" / "pl"
 FIGURE_PATH = ROOT / "figures" / "YbYAG_photoluminescence.png"
 TEMP_FIGURE_PATH = ROOT / "figures" / "YbYAG_temperature_photoluminescence.png"
-COMBINED_FIGURE_PATH = ROOT / "figures" / "YbYAG_combined_spectra.png"
+REFLECTION_FIGURE_PATH = ROOT / "figures" / "YbYAG_reflection.png"
+ABSORBANCE_FIGURE_PATH = ROOT / "figures" / "YbYAG_doped_absorbance.png"
 ABSORBANCE_PATH = ROOT / "YbYag_ABS.csv"
 REFLECTION_DIR = ROOT / "data" / "reflection"
 
@@ -191,7 +197,7 @@ def write_temperature_clean_csv(label, values):
 
 
 def plot_pl_panels(pl_spectra):
-    figure, axis = plt.subplots(figsize=(12, 6))
+    figure, axis = plt.subplots(figsize=(7.0, 4.5))
 
     for label, values in pl_spectra.items():
         wavelength = values[:, 0]
@@ -200,31 +206,25 @@ def plot_pl_panels(pl_spectra):
             wavelength,
             intensity,
             color=COLORS[label],
-            linewidth=1.8,
+            linewidth=1.55,
             label=label,
         )
     axis.set(
+        title="Yb:YAG photoluminescence under 942 nm excitation",
         xlabel="Wavelength (nm)",
         ylabel="PL intensity (arb. u.)",
         xlim=(950, 1140),
     )
+    format_axis(axis)
     axis.legend()
 
-    figure.suptitle("Yb:YAG photoluminescence under 942 nm excitation")
-    figure.text(
-        0.5,
-        0.008,
-        "Absolute PL intensities reflect the recorded measurement settings.",
-        ha="center",
-        fontsize=8,
-    )
-    figure.tight_layout(rect=(0, 0.035, 1, 0.97))
-    figure.savefig(FIGURE_PATH, dpi=200, bbox_inches="tight")
+    figure.tight_layout()
+    figure.savefig(FIGURE_PATH, bbox_inches="tight")
     plt.close(figure)
 
 
 def plot_temperature_pl(temp_spectra):
-    figure, axis = plt.subplots(figsize=(12, 6))
+    figure, axis = plt.subplots(figsize=(7.0, 4.5))
 
     for label, values in temp_spectra.items():
         wavelength = values[:, 0]
@@ -235,82 +235,77 @@ def plot_temperature_pl(temp_spectra):
             wavelength,
             intensity,
             color=color,
-            linewidth=1.8,
+            linewidth=1.55,
             label=label,
         )
 
     axis.set(
+        title="Yb:YAG temperature-dependent photoluminescence",
         xlabel="Wavelength (nm)",
         ylabel="Intensity (arb. u.)",
     )
+    format_axis(axis)
     axis.legend(frameon=True)
 
-    figure.suptitle("Yb:YAG temperature-dependent photoluminescence")
-    figure.tight_layout(rect=(0, 0, 1, 0.97))
-    figure.savefig(TEMP_FIGURE_PATH, dpi=200, bbox_inches="tight")
+    figure.tight_layout()
+    figure.savefig(TEMP_FIGURE_PATH, bbox_inches="tight")
     plt.close(figure)
 
 
-def plot_combined_spectra(
-    pl_spectra, absorbance, reflection, reflection_sides
-):
-    figure, axes = plt.subplots(3, 1, figsize=(12, 11), sharex=True)
-
+def plot_reflection_spectra(reflection, reflection_sides):
+    figure, axis = plt.subplots(figsize=(7.0, 4.5))
     for label in SAMPLES:
-        values = pl_spectra[label]
-        axes[0].plot(
-            values[:, 0],
-            values[:, 3],
-            color=COLORS[label],
-            linewidth=1.8,
-            label=label,
-        )
-
         values = reflection[label]
-        axes[1].plot(
+        axis.plot(
             values[:, 0],
             values[:, 1],
             color=COLORS[label],
-            linewidth=1.6,
+            linewidth=1.5,
             label=f"{label} (side {reflection_sides[label]})",
         )
 
+    axis.set(
+        title="Yb:YAG reflection spectra",
+        xlabel="Wavelength (nm)",
+        ylabel="Reflection (%)",
+        xlim=(800, 1200),
+    )
+    format_axis(axis)
+    axis.legend()
+    figure.tight_layout()
+    figure.savefig(REFLECTION_FIGURE_PATH, bbox_inches="tight")
+    plt.close(figure)
+
+
+def plot_absorbance_spectra(absorbance):
+    figure, axis = plt.subplots(figsize=(7.0, 4.5))
+    for label in SAMPLES:
         values = absorbance[label]
-        axes[2].plot(
+        axis.plot(
             values[:, 0],
             values[:, 1],
             color=COLORS[label],
-            linewidth=1.6,
+            linewidth=1.5,
             label=label,
         )
 
-    axes[0].set(
-        title="Photoluminescence",
-        ylabel="PL intensity (arb. u.)",
-    )
-    axes[1].set(
-        title="Reflection",
-        ylabel="Reflection (%)",
-    )
-    axes[2].set(
-        title="Absorbance",
+    axis.set(
+        title="Yb:YAG absorbance spectra",
         xlabel="Wavelength (nm)",
         ylabel="Absorbance",
+        xlim=(800, 1200),
     )
-    axes[2].set_xlim(800, 1200)
-    for axis in axes:
-        axis.legend(ncol=3, fontsize=9)
-
-    figure.suptitle("Yb:YAG measured spectra")
-    figure.tight_layout(rect=(0, 0, 1, 0.98))
-    figure.savefig(COMBINED_FIGURE_PATH, dpi=200, bbox_inches="tight")
+    format_axis(axis)
+    axis.legend()
+    figure.tight_layout()
+    figure.savefig(ABSORBANCE_FIGURE_PATH, bbox_inches="tight")
     plt.close(figure)
 
 
 def main():
     CLEAN_DIR.mkdir(parents=True, exist_ok=True)
     FIGURE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    plt.style.use("seaborn-v0_8-whitegrid")
+    apply_academic_style()
 
     pl_spectra = {}
     for label, (filename, _, correction_scale) in SAMPLES.items():
@@ -332,9 +327,8 @@ def main():
     plot_pl_panels(pl_spectra)
     if temp_spectra:
         plot_temperature_pl(temp_spectra)
-    plot_combined_spectra(
-        pl_spectra, absorbance, reflection, reflection_sides
-    )
+    plot_reflection_spectra(reflection, reflection_sides)
+    plot_absorbance_spectra(absorbance)
 
 
 if __name__ == "__main__":
