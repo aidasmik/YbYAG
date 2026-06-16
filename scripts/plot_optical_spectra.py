@@ -10,6 +10,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "figures"
 HC_EV_NM = 1239.841984
+UPDATED_PURE_SPECTRA = ROOT / "data" / "YbYAG_A3_B1_last_spectra.csv"
 
 EXPORT_SAMPLES = [
     "Instrument baseline",
@@ -60,6 +61,41 @@ def load_export(path):
         order = np.argsort(wavelength)
         spectra[sample] = (wavelength[order], signal[order])
     return spectra
+
+
+def load_updated_pure_spectra(path):
+    values = {
+        "Pure sample A": {"wavelength": [], "absorbance": [], "transmission": []},
+        "Pure sample B": {"wavelength": [], "absorbance": [], "transmission": []},
+    }
+    column_map = {
+        "Pure sample A": ("A3 Abs", "A3 Transmittance (%)"),
+        "Pure sample B": ("B1 Abs", "B1 Transmittance (%)"),
+    }
+
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        for row in csv.DictReader(handle):
+            wavelength = float(row["Wavelength (nm)"])
+            for sample, (absorbance_column, transmission_column) in column_map.items():
+                values[sample]["wavelength"].append(wavelength)
+                values[sample]["absorbance"].append(float(row[absorbance_column]))
+                values[sample]["transmission"].append(float(row[transmission_column]))
+
+    spectra = {"transmission": {}, "absorbance": {}}
+    for sample, sample_values in values.items():
+        wavelength = np.asarray(sample_values["wavelength"], dtype=float)
+        order = np.argsort(wavelength)
+        for key in ("transmission", "absorbance"):
+            signal = np.asarray(sample_values[key], dtype=float)
+            spectra[key][sample] = (wavelength[order], signal[order])
+    return spectra
+
+
+def apply_updated_pure_spectra(transmission, absorbance, path=UPDATED_PURE_SPECTRA):
+    pure_spectra = load_updated_pure_spectra(path)
+    for sample in ("Pure sample A", "Pure sample B"):
+        transmission[sample] = pure_spectra["transmission"][sample]
+        absorbance[sample] = pure_spectra["absorbance"][sample]
 
 
 def add_energy_axis(axis, location="top"):
@@ -119,14 +155,76 @@ def plot_overview(transmission, absorbance):
     plt.close(figure)
 
 
+def plot_transmission_only(transmission):
+    wavelength_figure, wavelength_axis = plt.subplots(figsize=(9, 5.4))
+    energy_figure, energy_axis = plt.subplots(figsize=(9, 5.4))
+
+    for sample in PLOT_SAMPLES:
+        wavelength, signal = transmission[sample]
+        wavelength_axis.plot(
+            wavelength,
+            signal,
+            color=COLORS[sample],
+            linestyle=LINESTYLES[sample],
+            marker="o",
+            markersize=2,
+            linewidth=1.3,
+            label=sample.replace("% Yb", "%").replace("Pure sample ", ""),
+        )
+
+        energy = HC_EV_NM / wavelength
+        order = np.argsort(energy)
+        energy_axis.plot(
+            energy[order],
+            signal[order],
+            color=COLORS[sample],
+            linestyle=LINESTYLES[sample],
+            marker="o",
+            markersize=2,
+            linewidth=1.3,
+            label=sample.replace("% Yb", "%").replace("Pure sample ", ""),
+        )
+
+    for axis, xlabel in (
+        (wavelength_axis, "Wavelength (nm)"),
+        (energy_axis, "Energy (eV)"),
+    ):
+        axis.set(
+            title="Yb:YAG transmission spectrum",
+            xlabel=xlabel,
+            ylabel="Transmission (%T)",
+        )
+        axis.legend(title="Sample")
+
+    wavelength_axis.set_xlim(780, 1220)
+    energy_axis.set_xlim(1.0, 1.56)
+
+    wavelength_figure.tight_layout()
+    energy_figure.tight_layout()
+    wavelength_figure.savefig(
+        ROOT / "YbYAG_transmission_plot_points_small.png",
+        dpi=160,
+        bbox_inches="tight",
+    )
+    energy_figure.savefig(
+        ROOT / "YbYAG_transmission_plot_eV.png",
+        dpi=160,
+        bbox_inches="tight",
+    )
+    plt.close(wavelength_figure)
+    plt.close(energy_figure)
+
+
 def main():
     FIGURES.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
 
     transmission = load_export(ROOT / "YbYag_T.csv")
     absorbance = load_export(ROOT / "YbYag_ABS.csv")
+    apply_updated_pure_spectra(transmission, absorbance)
 
     plot_overview(transmission, absorbance)
+    plot_transmission_only(transmission)
 
 
 if __name__ == "__main__":
