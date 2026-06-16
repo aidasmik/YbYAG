@@ -240,18 +240,13 @@ def plot_temperature_pl(temp_spectra):
         )
 
     axis.set(
-        title="Temperature-dependent PL intensity",
         xlabel="Wavelength (nm)",
         ylabel="Intensity (arb. u.)",
-        xlim=(960, 1160),
-        ylim=(-5, 60),
     )
-    axis.set_xticks(np.arange(960, 1161, 20))
-    axis.set_yticks(np.arange(0, 61, 10))
-    axis.legend(ncol=5, frameon=True)
+    axis.legend(frameon=True)
 
     figure.suptitle("Yb:YAG temperature-dependent photoluminescence")
-    figure.tight_layout(rect=(0, 0, 1, 0.95))
+    figure.tight_layout(rect=(0, 0, 1, 0.97))
     figure.savefig(TEMP_FIGURE_PATH, dpi=200, bbox_inches="tight")
     plt.close(figure)
 
