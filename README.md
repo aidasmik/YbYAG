@@ -17,8 +17,8 @@
 Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/10.3390/ma11050837).
 
 ## Photoluminescence
-
+Coated Samples
 ![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
-
+Sample A:
 ![Yb:YAG temperature-dependent photoluminescence](figures/YbYAG_temperature_photoluminescence.png)
 
