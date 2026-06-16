@@ -43,11 +43,11 @@ COLORS = {
 }
 
 TEMP_COLORS = {
-    "4 K": "#000000",
-    "50 K": "#FF0000",
-    "100 K": "#00CC00",
-    "200 K": "#0000FF",
-    "300 K": "#00D7FF",
+    "4 K": "#332288",
+    "50 K": "#117733",
+    "100 K": "#44AA99",
+    "200 K": "#DDCC77",
+    "300 K": "#CC6677",
 }
 
 
@@ -224,7 +224,7 @@ def plot_pl_panels(pl_spectra):
 
 
 def plot_temperature_pl(temp_spectra):
-    figure, axis = plt.subplots(figsize=(10.5, 6.8))
+    figure, axis = plt.subplots(figsize=(12, 6))
 
     for label, values in temp_spectra.items():
         wavelength = values[:, 0]
@@ -239,35 +239,8 @@ def plot_temperature_pl(temp_spectra):
             label=label,
         )
 
-    annotation = "\n".join(
-        [
-            "2026-02-03",
-            "Yb:YAG-A",
-            "Excitation:",
-            "halogen (U = 12.04 V, I = 8.26 A)",
-            "mono A@932 nm (from PLE)",
-            "A+B mono slits: (3/1.5)(3/3) mm",
-            "A mono 2g5f",
-            "Detection:",
-            "GA(TE) photodetector SR-ASM-0044",
-            "step = 0.5 nm",
-            "B mono 2g5f",
-            "sen = 1 mV",
-            "TC = 30/120 ms",
-        ]
-    )
-    axis.text(
-        0.025,
-        0.96,
-        annotation,
-        transform=axis.transAxes,
-        ha="left",
-        va="top",
-        fontsize=9.5,
-        color="#111111",
-    )
-    axis.vlines(1030.0, 5.0, 53.5, color="#222222", linewidth=0.8)
     axis.set(
+        title="Temperature-dependent PL intensity",
         xlabel="Wavelength (nm)",
         ylabel="Intensity (arb. u.)",
         xlim=(960, 1160),
@@ -275,17 +248,10 @@ def plot_temperature_pl(temp_spectra):
     )
     axis.set_xticks(np.arange(960, 1161, 20))
     axis.set_yticks(np.arange(0, 61, 10))
-    axis.minorticks_on()
-    axis.grid(False)
-    axis.legend(
-        frameon=True,
-        fancybox=False,
-        edgecolor="#000000",
-        loc="lower left",
-        bbox_to_anchor=(0.08, 0.18),
-    )
+    axis.legend(ncol=5, frameon=True)
 
-    figure.tight_layout()
+    figure.suptitle("Yb:YAG temperature-dependent photoluminescence")
+    figure.tight_layout(rect=(0, 0, 1, 0.95))
     figure.savefig(TEMP_FIGURE_PATH, dpi=200, bbox_inches="tight")
     plt.close(figure)
 
