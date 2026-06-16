@@ -86,7 +86,10 @@ def load_temperature_pl(path):
         for row in csv.reader(handle):
             if len(row) < 4:
                 continue
-            wavelength, response, raw, corrected = map(parse_number, row[:4])
+            try:
+                wavelength, response, raw, corrected = map(parse_number, row[:4])
+            except ValueError:
+                continue
             if not np.all(np.isfinite((wavelength, response, raw, corrected))):
                 continue
             rows.append((wavelength, response, raw, corrected))

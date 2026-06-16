@@ -1,3 +1,7 @@
+Long Name,Wavelength,system,PL,Intensity
+Units,nm,arb. u.,,arb. u.
+Comments,,s0,300K_1mV,300 K
+F(x)=,,,C/B*1
 965,1040.47214,16324,15.68903
 965.5,1045.8594,6344,6.06582
 966,1050.18618,6514,6.20271
