@@ -12,15 +12,15 @@
 
 ![Pure sample B offset to match sample A](figures/YbYAG_pure_A_B_offset_alignment.png)
 
-## Pure A/B coating fit
+## Coated sample coating fit
 
-[Coating fit script](scripts/fit_pure_ab_coating.py)
+[Coated sample coating fit script](scripts/fit_coated_sample_coatings.py)
 
-![Pure sample A and B coating match fit](figures/YbYAG_pure_A_B_coating_fit.png)
+![Coated Yb:YAG dielectric HR coating match](figures/YbYAG_coated_sample_coating_match.png)
 
-Fit summary: [data/YbYAG_pure_A_B_coating_fit_summary.csv](data/YbYAG_pure_A_B_coating_fit_summary.csv).
+Fit summary: [data/YbYAG_coated_sample_coating_match_summary.csv](data/YbYAG_coated_sample_coating_match_summary.csv). Candidate material ranking: [data/YbYAG_coated_sample_material_candidates.csv](data/YbYAG_coated_sample_material_candidates.csv).
 
-Using the 1100-1200 nm baseline region, sample A matches an uncoated polished YAG slab. Sample B does not match a normal uncoated or AR-coated slab; the simplest optical fit is one bare YAG side plus one side with about 22.3% effective reflection/loss.
+The 5%, 10%, and 15% Yb coated samples have a high-reflection plateau through the 1.0-1.1 um laser region, with a lower stopband edge near 885 nm. The closest simple quarter-wave dielectric Bragg reflector match is TiO2/SiO2, followed by Nb2O5/SiO2. Ta2O5/SiO2 or HfO2/SiO2 would require a chirped or otherwise broadened stack to match the measured 800-1200 nm band.
 
 ## Literature comparison
 
