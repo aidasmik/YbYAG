@@ -215,6 +215,56 @@ def plot_transmission_only(transmission):
     plt.close(energy_figure)
 
 
+def plot_pure_ab_comparison(transmission, absorbance):
+    figure, axes = plt.subplots(2, 1, figsize=(11, 7.5), sharex=True)
+    samples = ("Pure sample A", "Pure sample B")
+
+    for sample in samples:
+        wavelength, signal = transmission[sample]
+        axes[0].plot(
+            wavelength,
+            signal,
+            color=COLORS[sample],
+            linestyle=LINESTYLES[sample],
+            linewidth=2.0,
+            label=sample,
+        )
+
+        wavelength, signal = absorbance[sample]
+        axes[1].plot(
+            wavelength,
+            signal,
+            color=COLORS[sample],
+            linestyle=LINESTYLES[sample],
+            linewidth=2.0,
+            label=sample,
+        )
+
+    axes[0].set(
+        title="Transmission",
+        ylabel="Transmission (%)",
+        xlim=(800, 1200),
+    )
+    axes[1].set(
+        title="Absorbance",
+        xlabel="Wavelength (nm)",
+        ylabel="Absorbance",
+        xlim=(800, 1200),
+    )
+    for axis in axes:
+        axis.legend(frameon=True)
+    add_energy_axis(axes[0])
+
+    figure.suptitle("Pure Yb:YAG sample A vs B")
+    figure.tight_layout()
+    figure.savefig(
+        FIGURES / "YbYAG_pure_A_B_abs_trans_comparison.png",
+        dpi=200,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+
 def main():
     FIGURES.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
@@ -225,6 +275,7 @@ def main():
 
     plot_overview(transmission, absorbance)
     plot_transmission_only(transmission)
+    plot_pure_ab_comparison(transmission, absorbance)
 
 
 if __name__ == "__main__":

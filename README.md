@@ -8,6 +8,8 @@
 
 ![Transmission and absorbance](figures/YbYAG_transmission_absorbance.png)
 
+![Pure sample A and B transmission and absorbance comparison](figures/YbYAG_pure_A_B_abs_trans_comparison.png)
+
 ## Literature comparison
 
 [Comparison script](scripts/compare_with_literature.py)
