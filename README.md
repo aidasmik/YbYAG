@@ -10,6 +10,8 @@
 
 ![Pure sample A and B transmission and absorbance comparison](figures/YbYAG_pure_A_B_abs_trans_comparison.png)
 
+![Pure sample B offset to match sample A](figures/YbYAG_pure_A_B_offset_alignment.png)
+
 ## Literature comparison
 
 [Comparison script](scripts/compare_with_literature.py)

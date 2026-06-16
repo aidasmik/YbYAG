@@ -265,6 +265,103 @@ def plot_pure_ab_comparison(transmission, absorbance):
     plt.close(figure)
 
 
+def offset_to_match(reference, target):
+    reference_wavelength, reference_signal = reference
+    target_wavelength, target_signal = target
+    interpolated_target = np.interp(
+        reference_wavelength,
+        target_wavelength,
+        target_signal,
+        left=np.nan,
+        right=np.nan,
+    )
+    finite = np.isfinite(reference_signal) & np.isfinite(interpolated_target)
+    offset = float(np.nanmedian(reference_signal[finite] - interpolated_target[finite]))
+    return reference_wavelength, interpolated_target + offset, offset
+
+
+def plot_pure_ab_offset_alignment(transmission, absorbance):
+    figure, axes = plt.subplots(2, 1, figsize=(11, 7.5), sharex=True)
+    panels = (
+        (
+            axes[0],
+            transmission["Pure sample A"],
+            transmission["Pure sample B"],
+            "Transmission",
+            "Transmission (%)",
+            "percentage points",
+        ),
+        (
+            axes[1],
+            absorbance["Pure sample A"],
+            absorbance["Pure sample B"],
+            "Absorbance",
+            "Absorbance",
+            "absorbance",
+        ),
+    )
+
+    for axis, reference, target, title, ylabel, unit in panels:
+        reference_wavelength, reference_signal = reference
+        target_wavelength, target_signal = target
+        shifted_wavelength, shifted_signal, offset = offset_to_match(reference, target)
+
+        axis.plot(
+            reference_wavelength,
+            reference_signal,
+            color=COLORS["Pure sample A"],
+            linestyle=LINESTYLES["Pure sample A"],
+            linewidth=2.0,
+            label="Pure sample A",
+        )
+        axis.plot(
+            target_wavelength,
+            target_signal,
+            color=COLORS["Pure sample B"],
+            linestyle=":",
+            alpha=0.55,
+            linewidth=2.0,
+            label="Pure sample B original",
+        )
+        axis.plot(
+            shifted_wavelength,
+            shifted_signal,
+            color=COLORS["Pure sample B"],
+            linestyle=LINESTYLES["Pure sample B"],
+            linewidth=2.2,
+            label="Pure sample B + offset",
+        )
+        axis.text(
+            0.02,
+            0.92,
+            f"B offset to match A: {offset:+.4g} {unit}",
+            transform=axis.transAxes,
+            ha="left",
+            va="top",
+            fontsize=10,
+            bbox={
+                "boxstyle": "round,pad=0.3",
+                "facecolor": "white",
+                "edgecolor": "#999999",
+                "alpha": 0.88,
+            },
+        )
+        axis.set(title=title, ylabel=ylabel, xlim=(800, 1200))
+        axis.legend(frameon=True, loc="best")
+
+    axes[1].set_xlabel("Wavelength (nm)")
+    add_energy_axis(axes[0])
+
+    figure.suptitle("Pure Yb:YAG sample B offset to match sample A")
+    figure.tight_layout()
+    figure.savefig(
+        FIGURES / "YbYAG_pure_A_B_offset_alignment.png",
+        dpi=200,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+
 def main():
     FIGURES.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
@@ -276,6 +373,7 @@ def main():
     plot_overview(transmission, absorbance)
     plot_transmission_only(transmission)
     plot_pure_ab_comparison(transmission, absorbance)
+    plot_pure_ab_offset_alignment(transmission, absorbance)
 
 
 if __name__ == "__main__":
