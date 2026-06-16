@@ -62,20 +62,20 @@ def plot_ybyag_band_comparison(absorbance):
         linewidth=1.2,
     )
 
-    axis.text(939.4, 2.92, "Abs. 939.4 nm", ha="right", va="top", fontsize=8)
-    axis.text(968.93, 2.92, "Abs. 968.93 nm", ha="left", va="top", fontsize=8)
+    axis.text(939.4, 2.97, "Abs. 939.4 nm", ha="right", va="top", fontsize=8)
+    axis.text(968.93, 2.97, "Abs. 968.93 nm", ha="left", va="top", fontsize=8)
     axis.text(
-        1030,
-        0.07,
+        1028,
+        0.08,
         "Emission 1030 nm\nFWHM 8.5 nm",
-        ha="center",
+        ha="right",
         va="bottom",
         fontsize=8,
         color="#9C6B00",
     )
     axis.text(
-        1050,
-        0.07,
+        1052,
+        0.08,
         "Emission\n~1050 nm",
         ha="left",
         va="bottom",
@@ -91,7 +91,7 @@ def plot_ybyag_band_comparison(absorbance):
         ylim=(0, 3.05),
     )
     format_axis(axis)
-    axis.legend(ncol=3)
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
     figure.text(
         0.5,
