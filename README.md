@@ -10,11 +10,6 @@
 
 ![Pure sample B transmission offset to match A](figures/YbYAG_pure_A_B_transmission_offset_alignment.png)
 
-## Literature comparison
-
-![Measured Yb:YAG absorbance with published spectral positions](figures/YbYAG_literature_band_comparison.png)
-
-Spectral positions from [Pirri et al., Materials 11 (2018) 837](https://doi.org/10.3390/ma11050837).
 
 ## Photoluminescence
 Coated Samples
