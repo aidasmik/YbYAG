@@ -216,7 +216,7 @@ def plot_pl_panels(pl_spectra):
         xlim=(950, 1140),
     )
     format_axis(axis)
-    axis.legend()
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
     figure.tight_layout()
     figure.savefig(FIGURE_PATH, bbox_inches="tight")
@@ -245,7 +245,7 @@ def plot_temperature_pl(temp_spectra):
         ylabel="Intensity (arb. u.)",
     )
     format_axis(axis)
-    axis.legend(frameon=True)
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
     figure.tight_layout()
     figure.savefig(TEMP_FIGURE_PATH, bbox_inches="tight")
@@ -271,7 +271,7 @@ def plot_reflection_spectra(reflection, reflection_sides):
         xlim=(800, 1200),
     )
     format_axis(axis)
-    axis.legend()
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
     figure.tight_layout()
     figure.savefig(REFLECTION_FIGURE_PATH, bbox_inches="tight")
     plt.close(figure)
@@ -296,7 +296,7 @@ def plot_absorbance_spectra(absorbance):
         xlim=(800, 1200),
     )
     format_axis(axis)
-    axis.legend()
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
     figure.tight_layout()
     figure.savefig(ABSORBANCE_FIGURE_PATH, bbox_inches="tight")
     plt.close(figure)
