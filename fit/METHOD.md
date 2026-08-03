@@ -21,7 +21,7 @@ NIR, meaning the loss needed to explain `T` exceeded what `k` could carry withou
 spoiling the reflection fit. With `n,k` free per point there is nothing to stop
 absorption and scattering trading against each other.
 
-Here `n` and `k` come from **one model with 14 parameters** fitted to every
+Here `n` and `k` come from **one model with 29 parameters** fitted to every
 wavelength and every angle simultaneously, so the trade is closed:
 
 * the 10-AOI reflection Mueller matrix fixes `n(lambda)` absolutely, independent
@@ -107,43 +107,109 @@ YAG reference 1.8070.
 **2. Oscillators must be confined to the Yb manifold.** With generic bounds one
 Gaussian runs off to ~1570 nm with a 1.3 eV width and becomes a smooth background
 absorption -- a KK-consistent stand-in for scattering, reintroducing the very
-degeneracy the model exists to break. Centres are held to 900-1100 nm and widths
-to <= 0.08 eV.
+degeneracy the model exists to break. Each line is therefore held inside its own
+narrow centre window (see the line table below) with widths <= 0.070 eV -- which
+also stops neighbouring Yb lines merging into one broad smear.
+
+## Which transmission dips are real
+
+The measured transmittance contains **41 dips with prominence > 0.004**, and the
+first version of this model described only the Yb cluster. Before adding
+oscillators for the rest, they have to be shown to be *material* absorption --
+fitting instrumental structure would inject fake `k` and, through KK, corrupt `n`.
+
+Test: reflection was measured on **2026-06-30**, transmission on **2026-06-18**.
+Real absorption changes `k`, which attenuates the backside beam and therefore
+shows up in the reflection Mueller matrix and in the depolarisation. An artefact
+confined to the transmission channel does not. Correlating the transmittance
+ripple against the independently measured reflection observables:
+
+| band | corr(T, depol) | corr(T, s12) | verdict |
+|---|---|---|---|
+| 300-500 nm | -0.09 | +0.04 | instrumental |
+| 500-700 nm | -0.06 | +0.08 | instrumental |
+| 700-900 nm | +0.05 | -0.22 | instrumental |
+| **900-1060 nm** | **+0.34** | **-0.42** | **real absorption** |
+| 1100-1690 nm | +0.06 | +0.20 | instrumental |
+
+Only the Yb manifold is real. The ~30 other dips -- at 349, 403, 467, 486, 544,
+581, 602, 611, 756, the dense 800-880 nm series, 1105, 1527 nm -- live purely in
+the transmission channel (lamp/grating structure and a ~4 nm-period ripple in the
+800-950 nm region). They are reproduced between samples A and B at r = 0.98-0.99
+*because both share the same instrument*, so sample-to-sample agreement alone
+does not establish they are real; the reflection cross-check does. **They are
+deliberately not fitted.**
+
+Checked and excluded as explanations for the 800-950 nm ripple: it is not a
+detector-interleave artefact (consecutive-difference sign alternation is 41-44%,
+i.e. random, and the even/odd offset is 6e-5), and an FFT in wavenumber returns
+inconsistent optical paths per band (151 / 2.8 / 15.9 um), so it is not a single
+etalon.
 
 ## Results (sample B, d = 1.000 mm assumed)
 
-`n` matches Zelmon single-crystal YAG to **RMS 0.0017** (max deviation 0.0046)
-over 350-1650 nm, from a 14-parameter global model.
+`n` matches Zelmon single-crystal YAG to **RMS 0.0018** (max deviation 0.0047)
+over 350-1650 nm, from a 29-parameter global model.
 
 | parameter | value | 1 sigma |
 |---|---|---|
-| UV pole amplitude | 258.2 eV^2 | 3.0 |
-| UV pole energy | 10.682 eV | 0.058 |
-| IR pole amplitude | 0.00433 eV^2 | 0.0026 |
-| Gaussian 1 | A=2.603e-5, E=1.3305 eV (931.8 nm), Br=0.0696 eV | 4e-7 / 6e-4 / 1e-3 |
-| Gaussian 2 | A=2.831e-5, E=1.3184 eV (940.4 nm), Br=0.0111 eV | 8e-7 / 1e-4 / 4e-4 |
-| Gaussian 3 | A=5.53e-6, E=1.2278 eV (1009.8 nm), Br=0.080 eV | 4e-7 / 3e-3 / 9e-3 |
-| scatter | C = 3.510 /cm, p = 0.109 | 0.002 / 0.001 |
+| UV pole amplitude | 256.5 eV^2 | 3.0 |
+| UV pole energy | 10.649 eV | 0.057 |
+| IR pole amplitude | 0.00247 eV^2 | 0.0026 |
+| scatter | C = 3.506 /cm, p = 0.1099 | 0.002 / 0.001 |
+
+Yb(3+) `2F7/2 -> 2F5/2` crystal-field lines (amplitude / centre / FWHM):
+
+| line | A | centre (nm) | E (eV) | Br (eV) | note |
+|---|---|---|---|---|---|
+| 1 | 2.70e-6 | 879.0 | 1.4105 | 0.070* | phonon sideband, width at bound |
+| 2 | 7.14e-6 | 910.0 | 1.3625 | 0.039 | |
+| 3 | 1.76e-5 | 914.9 | 1.3552 | 0.0091 | sharp |
+| 4 | 2.21e-5 | 930.4 | 1.3326 | 0.0199 | |
+| 5 | **3.62e-5** | **941.1** | **1.3175** | **0.0115** | main pump band |
+| 6 | 1.43e-5 | 955.2 | 1.2981 | 0.070* | width at bound |
+| 7 | 4.43e-6 | 997.3 | 1.2432 | 0.0133 | |
+| 8 | 7.64e-6 | 1029.0 | 1.2049 | 0.0254 | emission line |
+
+\* widths pinned at the 0.070 eV bound are broad pedestals (phonon sidebands);
+their uncertainties are not meaningful.
+
+The manifold is **resolved, not a smooth band**. Describing it with two or three
+broad Gaussians smears across the structure and leaves systematic transmittance
+residuals up to 0.020 at 915 nm; each oscillator is therefore confined to its own
+narrow centre window so neighbouring lines cannot merge.
+
+Transmittance residual **inside** the Yb manifold (880-1080 nm):
+
+| model | RMS | max |
+|---|---|---|
+| 3 broad Gaussians | 0.0087 | 0.0198 |
+| 8 windowed lines | **0.0026** | **0.0060** |
+
+which is at the 0.5% photometric floor -- nothing above 0.007 remains. Outside
+the manifold the residual is 0.0058 RMS and is dominated by the instrumental
+ripple identified above, which is not fitted by design.
 
 Per-pass optical depth: scattering `alpha*d = 0.388` (400 nm) falling to `0.335`
-(1550 nm); Yb absorption `alpha*d = 0.193` at the 940 nm band, against an
-empirical `0.196` read directly off the inverted transmittance.
+(1550 nm); Yb absorption peaks at `alpha*d = 0.19` on the 941 nm band.
 
-**The near-grey scatter exponent `p = 0.11` is the main physical result.** The
-dominant loss in these samples is not absorption and not Rayleigh scattering: it
-is almost wavelength-independent, i.e. Mie/geometric scattering from features
-comparable to or larger than the wavelength (grain boundaries, residual pores).
-That is what the earlier fit's unexplained 2-3% NIR transmittance gap was.
+**The near-grey scatter exponent `p = 0.110 +/- 0.001` is the main physical
+result.** The dominant loss in these samples is neither absorption nor Rayleigh
+scattering: it is almost wavelength-independent, i.e. Mie/geometric scattering
+from features comparable to or larger than the wavelength (grain boundaries,
+residual pores). That is what the earlier fit's unexplained 2-3% NIR
+transmittance gap was.
 
 **Cross-validation.** Sample A, fitted transmission-only with `n` frozen at B's
-reflection result, reproduces B's parameters independently:
+reflection result, reproduces B independently -- all eight line centres to
+< 1 nm and the scatter to < 1%:
 
-| | scatter C | p | 931 nm A | 940 nm A | 1009 nm A |
+| | scatter C | p | 915 nm | 941 nm | 1029 nm |
 |---|---|---|---|---|---|
-| B (R+T) | 3.510 | 0.109 | 2.603e-5 | 2.831e-5 | 5.53e-6 |
-| A (T only) | 3.535 | 0.131 | 2.600e-5 | 2.817e-5 | 5.13e-6 |
+| B (R+T) | 3.506 | 0.110 | 914.9 nm, 1.76e-5 | 941.1 nm, 3.62e-5 | 1029.0 nm, 7.64e-6 |
+| A (T only) | 3.532 | 0.131 | 914.9 nm, 1.78e-5 | 941.0 nm, 3.66e-5 | 1029.7 nm, 7.27e-6 |
 
-Agreement is <1% on every oscillator amplitude and 0.1 nm on every line centre.
+A's Yb-band residual is 0.0025 RMS.
 
 ## Thickness
 
@@ -174,7 +240,7 @@ exports also carry a UTF-8 BOM and CRLF endings that put the header on the
 * `YbYag_B_UMMt [2026-06-16,175112]` has median `T = 0.835`, sitting at the
   lossless-slab limit -- it looks like a straight-through baseline, not a sample.
 
-Masked: 651-661 nm (grating turret change) and 965-980 nm (Si/InGaAs detector
+Masked: 651-661 nm (grating turret change) and 965-983 nm (Si/InGaAs detector
 crossover). The crossover unfortunately sits on the Yb zero-phonon line, and the
 inverted `alpha*d` there goes *negative*, confirming it is an artefact rather
 than structure. `--keep-zpl` lifts the mask and adds a 969 nm oscillator.

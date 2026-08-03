@@ -84,10 +84,10 @@ UNUSABLE = {
 }
 
 # Instrumental artefacts to exclude.  651-661 nm is the grating turret change;
-# 965-980 nm is the Si/InGaAs detector crossover, which unfortunately sits on the
+# 965-983 nm is the Si/InGaAs detector crossover, which unfortunately sits on the
 # Yb zero-phonon line -- it is masked by default and can be kept with --keep-zpl.
 GRATING_MASK = (651.0, 661.0)
-DETECTOR_MASK = (965.0, 980.0)
+DETECTOR_MASK = (965.0, 983.0)
 
 
 def _mask_ranges(wls, ranges):
@@ -177,25 +177,34 @@ def build_model(uv_edge=False, with_yb=True, fit_dispersion=True, with_zpl=False
             free += ["gauss0_amp", "gauss0_En", "gauss0_Br"]
     if with_yb:
         i0 = len(m["gaussians"])
-        # Yb3+ 2F7/2 -> 2F5/2: pump band, emission wing, and (only when the
-        # detector-crossover mask is lifted) the 969 nm zero-phonon line.
-        # amp ~5e-6 gives the ~0.18 excess per-pass optical depth measured at the
-        # 940 nm band for a 1 mm slab.
-        # Line list read off the empirical alpha*d spectrum (T inverted at known
-        # n): a main band at 941 nm with FWHM ~18 nm (0.025 eV), a resolved
-        # shoulder near 915 nm, and the 1030 nm emission wing.  A single broad
-        # Gaussian straddling 915+941 reproduces the dip ~40% too shallow.
-        lines = [(915.0, 0.020), (941.0, 0.025), (1030.0, 0.030)]
+        # Yb3+ 2F7/2 -> 2F5/2 crystal-field lines.  The manifold is *resolved*,
+        # not a smooth band: fitting it with two or three broad Gaussians smears
+        # across the structure and leaves systematic residuals up to 0.020 in
+        # transmittance at 915 nm.  Centres and half-windows below are read off
+        # the residual spectrum of the previous iteration; each oscillator is
+        # confined to its own window so neighbouring lines cannot merge into one
+        # broad feature (which is how the smearing arises).
+        #
+        # (line centre nm, half-window nm, seed FWHM eV, seed amplitude)
+        lines = [
+            (885.0, 6.0, 0.015, 2e-6),
+            (905.0, 5.0, 0.010, 4e-6),
+            (915.0, 7.0, 0.012, 8e-6),
+            (928.0, 5.0, 0.010, 6e-6),
+            (941.0, 5.0, 0.012, 2.5e-5),
+            (960.0, 5.0, 0.010, 4e-6),
+            (998.0, 7.0, 0.012, 3e-6),
+            (1030.0, 9.0, 0.015, 5e-6),
+        ]
         if with_zpl:
-            lines.insert(2, (969.0, 0.008))
-        for cen, br in lines:
-            m["gaussians"].append([5e-6, dsp.HC / cen, br])
-        # The whole Yb manifold lies within 900-1100 nm; hold the oscillators
-        # there so none of them can degenerate into a scattering surrogate.
-        for j in range(i0, len(m["gaussians"])):
+            lines.insert(5, (968.5, 4.0, 0.006, 8e-6))   # zero-phonon line
+        for cen, half, br, amp in lines:
+            m["gaussians"].append([amp, dsp.HC / cen, br])
+            j = len(m["gaussians"]) - 1
             free += [f"gauss{j}_amp", f"gauss{j}_En", f"gauss{j}_Br"]
-            m["bounds"][f"gauss{j}_En"] = (dsp.HC / 1100.0, dsp.HC / 900.0)
-            m["bounds"][f"gauss{j}_Br"] = (2e-3, 0.08)
+            # window in energy (note hc/lambda inverts the ordering)
+            m["bounds"][f"gauss{j}_En"] = (dsp.HC / (cen + half), dsp.HC / (cen - half))
+            m["bounds"][f"gauss{j}_Br"] = (2e-3, 0.070)   # upper end = phonon sideband
             m["bounds"][f"gauss{j}_amp"] = (0.0, 1e-3)
     return m, free
 

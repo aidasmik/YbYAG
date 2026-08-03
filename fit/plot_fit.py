@@ -91,7 +91,40 @@ def main(argv=None):
     fig.tight_layout()
     f2 = os.path.join(a.out, f"fig_{a.sample}_fit_vs_data.png")
     fig.savefig(f2, dpi=140)
-    print(f"wrote {f1}\nwrote {f2}")
+    out = [f1, f2]
+
+    # ---- fig 3: the Yb manifold, where the resolved structure lives ------
+    if data["T"] is not None:
+        Tm = transmittance(N, wls, [0.0], d_nm, asc)[:, 0]
+        sel = (wls > 860) & (wls < 1090)
+        fig, ax = plt.subplots(2, 1, figsize=(9, 6.4), sharex=True,
+                               gridspec_kw={"height_ratios": [3, 1]})
+        ax[0].plot(wls[sel], data["T"][sel], lw=1.1, label="measured")
+        ax[0].plot(wls[sel], Tm[sel], "--", lw=1.3, color="k", label="model")
+        for g in m["gaussians"]:
+            lam0 = dsp.HC / g[1]
+            if 860 < lam0 < 1090:
+                ax[0].axvline(lam0, color="C3", lw=0.7, alpha=0.5)
+                ax[0].annotate(f"{lam0:.0f}", (lam0, ax[0].get_ylim()[1]),
+                               fontsize=7, color="C3", rotation=90,
+                               va="top", ha="right")
+        ax[0].set_ylabel("transmittance")
+        ax[0].legend(frameon=False)
+        ax[0].set_title(f"{a.sample}: Yb$^{{3+}}$ $^2F_{{7/2}}\\to{{}}^2F_{{5/2}}$ manifold "
+                        "(red = fitted line centres)")
+        res = Tm[sel] - data["T"][sel]
+        ax[1].plot(wls[sel], res, lw=0.9, color="C3")
+        ax[1].axhline(0, color="k", lw=0.6)
+        ax[1].fill_between(wls[sel], -0.005, 0.005, color="0.85", zorder=0,
+                           label="0.5% photometric floor")
+        ax[1].set_xlabel("wavelength (nm)")
+        ax[1].set_ylabel("model $-$ meas")
+        ax[1].legend(frameon=False, fontsize=8)
+        fig.tight_layout()
+        f3 = os.path.join(a.out, f"fig_{a.sample}_yb_band.png")
+        fig.savefig(f3, dpi=140)
+        out.append(f3)
+    print("\n".join(f"wrote {p}" for p in out))
     return 0
 
 
