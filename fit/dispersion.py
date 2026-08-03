@@ -25,6 +25,8 @@ separately as an intensity loss coefficient (see `scatter_alpha`) applied to the
 propagation through the slab only.
 """
 
+import re
+
 import numpy as np
 from scipy.special import dawsn
 
@@ -80,6 +82,7 @@ def unpack(model, names, x):
         "gaussians": [list(g) for g in model["gaussians"]],
         "scatter": list(model["scatter"]),
         "bounds": dict(model.get("bounds", {})),
+        "yb_assign": list(model.get("yb_assign", [])),
     }
     for name, v in zip(names, x):
         if name == "eps_inf":
@@ -100,8 +103,19 @@ def unpack(model, names, x):
 
 
 def _idx(name):
-    head, fld = name.rsplit("_", 1)
-    return int(head[-1]), fld
+    """Split e.g. 'gauss12_amp' into (12, 'amp').
+
+    The index must be parsed as a whole number, not as the trailing character:
+    with ten or more oscillators `int(head[-1])` maps gauss10..gauss13 onto
+    0..3, silently aliasing four parameters onto four others.  That makes the
+    Jacobian singular (every uncertainty comes back NaN) and lets amplitudes be
+    driven to absurd values, while the reported per-line table -- which reads
+    model["gaussians"] directly -- still looks plausible.
+    """
+    m = re.fullmatch(r"([A-Za-z]+)(\d+)_(\w+)", name)
+    if m is None:
+        raise KeyError(name)
+    return int(m.group(2)), m.group(3)
 
 
 def _iter_params(model):
@@ -237,7 +251,24 @@ def _kk_selftest(verbose=True):
     return max(err)
 
 
+def _param_roundtrip_selftest():
+    """pack/unpack must survive >=10 oscillators (regression: gauss1X aliasing)."""
+    m = yag_seed()
+    m["gaussians"] = [[1e-5 * (i + 1), 1.0 + 0.01 * i, 0.01] for i in range(14)]
+    free = [f"gauss{i}_amp" for i in range(14)]
+    x, _, names = pack(m, free)
+    x2 = x * 3.0
+    m2 = unpack(m, names, x2)
+    got = np.array([g[0] for g in m2["gaussians"]])
+    want = np.array([1e-5 * (i + 1) * 3.0 for i in range(14)])
+    return float(np.max(np.abs(got - want)))
+
+
 if __name__ == "__main__":
+    err = _param_roundtrip_selftest()
+    print(f"parameter pack/unpack with 14 oscillators: max error {err:.2e}"
+          f"  {'OK' if err < 1e-18 else 'FAIL'}")
+    print()
     print("KK consistency of the Gaussian oscillator (numeric vs analytic eps1):")
     worst = _kk_selftest()
     print(f"worst |difference| = {worst:.2e}")

@@ -83,11 +83,22 @@ UNUSABLE = {
     "YbYag_B_UMMt [2026-06-16,175112].dat": "median T=0.835, at the lossless-slab limit -- looks like a straight-through baseline, not a sample scan",
 }
 
-# Instrumental artefacts to exclude.  651-661 nm is the grating turret change;
-# 965-983 nm is the Si/InGaAs detector crossover, which unfortunately sits on the
-# Yb zero-phonon line -- it is masked by default and can be kept with --keep-zpl.
+# Instrumental artefacts to exclude.  651-661 nm is the grating turret change.
+#
+# The Si/InGaAs detector crossover is 971-983 nm, NOT 965-983: at 965-970 the
+# inverted optical depth rises smoothly to alpha*d = 0.48 at 969 nm, which is the
+# real Yb zero-phonon line, whereas at 971-983 the transmittance jumps to
+# 0.60-0.68, above the sample's own out-of-band baseline (~0.58) and therefore
+# unphysical.  Masking the wider range threw away the ZPL and left the fit with
+# no oscillator for the absorption climbing into the mask, which it compensated
+# with a spurious 52 nm-wide "line" at 955 nm pinned against its width bound.
+# An oscillator amplitude of 1e-7 corresponds to a per-pass optical depth of
+# ~3e-4 at 1 um for a 1 mm slab, more than an order of magnitude below the 0.5%
+# photometric floor -- i.e. indistinguishable from zero.
+AMP_DETECT = 1e-7
+
 GRATING_MASK = (651.0, 661.0)
-DETECTOR_MASK = (965.0, 983.0)
+DETECTOR_MASK = (971.0, 983.0)
 
 
 def _mask_ranges(wls, ranges):
@@ -176,37 +187,87 @@ def build_model(uv_edge=False, with_yb=True, fit_dispersion=True, with_zpl=False
         if fit_dispersion:
             free += ["gauss0_amp", "gauss0_En", "gauss0_Br"]
     if with_yb:
-        i0 = len(m["gaussians"])
-        # Yb3+ 2F7/2 -> 2F5/2 crystal-field lines.  The manifold is *resolved*,
-        # not a smooth band: fitting it with two or three broad Gaussians smears
-        # across the structure and leaves systematic residuals up to 0.020 in
-        # transmittance at 915 nm.  Centres and half-windows below are read off
-        # the residual spectrum of the previous iteration; each oscillator is
-        # confined to its own window so neighbouring lines cannot merge into one
-        # broad feature (which is how the smearing arises).
-        #
-        # (line centre nm, half-window nm, seed FWHM eV, seed amplitude)
-        lines = [
-            (885.0, 6.0, 0.015, 2e-6),
-            (905.0, 5.0, 0.010, 4e-6),
-            (915.0, 7.0, 0.012, 8e-6),
-            (928.0, 5.0, 0.010, 6e-6),
-            (941.0, 5.0, 0.012, 2.5e-5),
-            (960.0, 5.0, 0.010, 4e-6),
-            (998.0, 7.0, 0.012, 3e-6),
-            (1030.0, 9.0, 0.015, 5e-6),
-        ]
-        if with_zpl:
-            lines.insert(5, (968.5, 4.0, 0.006, 8e-6))   # zero-phonon line
-        for cen, half, br, amp in lines:
+        # Line CENTRES ARE FIXED at the Stark-level predictions -- they are known
+        # spectroscopic constants, not free parameters.  Only the oscillator
+        # strengths and widths are fitted.  Letting the centres float makes the
+        # problem badly conditioned (neighbouring lines overlap within a few nm)
+        # and lets a line drift onto whatever residual bump is nearby, which is
+        # how the spurious 955 nm feature arose.
+        m["yb_assign"] = []
+        for cen, half, br, amp, kind, tag in yb_lines():
             m["gaussians"].append([amp, dsp.HC / cen, br])
             j = len(m["gaussians"]) - 1
-            free += [f"gauss{j}_amp", f"gauss{j}_En", f"gauss{j}_Br"]
-            # window in energy (note hc/lambda inverts the ordering)
-            m["bounds"][f"gauss{j}_En"] = (dsp.HC / (cen + half), dsp.HC / (cen - half))
-            m["bounds"][f"gauss{j}_Br"] = (2e-3, 0.070)   # upper end = phonon sideband
+            free += [f"gauss{j}_amp", f"gauss{j}_Br"]
+            # An electronic crystal-field line is narrow; only an explicitly
+            # labelled vibronic sideband is allowed to be broad.  Without this
+            # split the fit parks a 52 nm-wide "line" against its width bound and
+            # uses it to mop up whatever the line list is missing.
+            m["bounds"][f"gauss{j}_Br"] = (2e-3, 0.025) if kind == "e" else (0.010, 0.100)
             m["bounds"][f"gauss{j}_amp"] = (0.0, 1e-3)
+            m["yb_assign"].append((j, cen, kind, tag))
     return m, free
+
+
+# Yb(3+) in YAG, Stark levels (cm^-1), e.g. Fan et al., IEEE JQE 24, 924 (1988):
+#   2F7/2 (ground):  0, 565, 612, 785
+#   2F5/2 (excited): 10327, 10634, 10927
+# Every electronic absorption line below is a difference of one from each set,
+# so its centre is *predicted*, not tuned to a residual bump.  At room
+# temperature the 565/612/785 levels are thermally populated, giving the hot
+# bands to the red of the zero-phonon line.
+YB_STARK_GROUND = (0.0, 565.0, 612.0, 785.0)
+YB_STARK_EXCITED = (10327.0, 10634.0, 10927.0)
+
+
+def yb_lines():
+    """(centre nm, half-window nm, seed FWHM eV, seed amp, kind, assignment).
+
+    kind: "e" = electronic Stark transition, "v" = vibronic (phonon) sideband.
+    """
+    def nm(cm):
+        return 1e7 / cm
+
+    # every allowed electronic transition in range
+    raw = []
+    for g, seed in zip(YB_STARK_GROUND, (3.0e-5, 6e-6, 6e-6, 2e-6)):
+        for e in YB_STARK_EXCITED:
+            lam = nm(e - g)
+            if 860.0 < lam < 1090.0:
+                raw.append((lam, seed, f"{g:.0f}->{e:.0f}"))
+    raw.sort()
+
+    # Merge only transitions closer than 2 nm.  The instrument does resolve the
+    # 965 / 968 / 969 nm group -- merging it leaves +0.026 residual on the sharp
+    # zero-phonon line and -0.011 on its blue neighbour -- so the threshold must
+    # sit below their 3.2 nm spacing.  (Centres being FIXED is what makes near-
+    # degenerate lines tractable here; with free centres this stalls.)
+    # Kept separate they are mutually degenerate: the fit cannot apportion
+    # strength between them, and convergence stalls without adding information.
+    # The cluster is represented at its intensity-weighted centre.
+    out, cluster = [], [raw[0]]
+    for item in raw[1:] + [(1e9, 0.0, "")]:
+        if item[0] - cluster[-1][0] < 2.0:
+            cluster.append(item)
+            continue
+        wsum = sum(c[1] for c in cluster)
+        cen = sum(c[0] * c[1] for c in cluster) / wsum
+        tag = " + ".join(c[2] for c in cluster)
+        out.append((cen, 3.0, 0.010, wsum, "e", tag))
+        cluster = [item]
+
+    # Vibronic sidebands: the ZPL and the 0->10927 line each carry a phonon
+    # replica to the blue (YAG phonon energies ~150-800 cm^-1).  These are
+    # genuinely broad and are the only oscillators permitted to be so.
+    # +150 cm^-1 is the lowest YAG optical phonon; without it a +0.010 residual
+    # sits across 952-959 nm, which is what a floating oscillator previously
+    # mopped up as the spurious "955 nm line".
+    out.append((nm(YB_STARK_EXCITED[0] + 150.0), 6.0, 0.015, 6e-6, "v", "ZPL + 150 cm^-1"))
+    out.append((nm(YB_STARK_EXCITED[0] + 420.0), 8.0, 0.030, 1.5e-5, "v", "ZPL + 420 cm^-1"))
+    # the 0->10927 line carries its own phonon wing; without these two the model
+    # under-absorbs by up to 0.015 across 883-901 nm
+    out.append((nm(YB_STARK_EXCITED[2] + 200.0), 6.0, 0.020, 6e-6, "v", "10927 + 200 cm^-1"))
+    out.append((nm(YB_STARK_EXCITED[2] + 500.0), 10.0, 0.040, 5e-6, "v", "10927 + 500 cm^-1"))
+    return sorted(out)
 
 
 def make_residuals(data, model, free, d_nm, d_rough, w_trans, t_sys=0.005):
@@ -344,6 +405,43 @@ def main(argv=None):
     sol = least_squares(resid, x0, bounds=bounds, method="trf",
                         x_scale="jac", max_nfev=4000, verbose=0)
     m = dsp.unpack(model, names, sol.x)
+
+    # An oscillator whose amplitude refines to ~0 is below the detection limit,
+    # and its width then has zero gradient -- which makes the Jacobian singular
+    # and every uncertainty NaN.  Drop such lines and refit so the reported
+    # covariance is meaningful; they are listed as "not detected" instead.
+    dropped = [(j, cen, tag) for j, cen, kind, tag in m.get("yb_assign", [])
+               if m["gaussians"][j][0] < AMP_DETECT]
+    if dropped:
+        keep = {j for j, *_ in m.get("yb_assign", [])} - {j for j, *_ in dropped}
+        remap, gs, assign, bounds_new = {}, [], [], {}
+        for j, g in enumerate(m["gaussians"]):
+            if j in keep or j not in {d[0] for d in dropped}:
+                remap[j] = len(gs)
+                gs.append(g)
+        for j, cen, kind, tag in m["yb_assign"]:
+            if j in remap:
+                assign.append((remap[j], cen, kind, tag))
+        for k, v in m["bounds"].items():
+            if k.startswith("gauss"):
+                i, fld = dsp._idx(k)
+                if i in remap:
+                    bounds_new[f"gauss{remap[i]}_{fld}"] = v
+            else:
+                bounds_new[k] = v
+        m["gaussians"], m["yb_assign"], m["bounds"] = gs, assign, bounds_new
+        free2 = [f for f in names if not f.startswith("gauss")]
+        free2 += [f"gauss{remap[i]}_{fld}"
+                  for f in names if f.startswith("gauss")
+                  for i, fld in [dsp._idx(f)] if i in remap]
+        resid, x0, bounds, names = make_residuals(
+            data, m, free2, d_nm, a.roughness, a.w_trans, a.t_sys)
+        sol = least_squares(resid, x0, bounds=bounds, method="trf",
+                            x_scale="jac", max_nfev=4000, verbose=0)
+        m = dsp.unpack(m, names, sol.x)
+        print("\nnot detected (amplitude below the photometric limit), dropped:")
+        for _, cen, tag in dropped:
+            print(f"  {cen:7.1f} nm   {tag}")
     print(f"converged: {sol.success} ({sol.message.strip()})")
     print(f"final cost {sol.cost:.5g}, nfev={sol.nfev}")
 
@@ -383,9 +481,11 @@ def main(argv=None):
         print(f"\ntransmittance residual: mean {np.nanmean(resT):+.4f}, "
               f"RMS {np.sqrt(np.nanmean(resT**2)):.4f}")
     print("\nscatter: alpha_sc = %.3f (1000nm/lam)^%.2f 1/cm" % tuple(m["scatter"]))
-    for g in m["gaussians"]:
-        print(f"  Gaussian: A={g[0]:.4g}  E0={g[1]:.4f} eV ({dsp.HC/g[1]:.1f} nm)"
-              f"  Br={g[2]:.4f} eV")
+    print("\nYb oscillators (centres FIXED at the Stark-level predictions):")
+    print("   lambda    kind  A          FWHM(eV)  assignment")
+    for j, cen, kind, tag in m.get("yb_assign", []):
+        g = m["gaussians"][j]
+        print(f"  {cen:7.1f}   {kind}    {g[0]:.4g}  {g[2]:.4f}    {tag}")
     print(f"\nwrote {path}")
     return 0
 

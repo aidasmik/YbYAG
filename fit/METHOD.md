@@ -146,70 +146,113 @@ i.e. random, and the even/odd offset is 6e-5), and an FFT in wavenumber returns
 inconsistent optical paths per band (151 / 2.8 / 15.9 um), so it is not a single
 etalon.
 
+## The Yb manifold: centres are predicted, not fitted
+
+Line centres are **fixed** at the Yb(3+) Stark-level scheme (`YB_STARK_GROUND`,
+`YB_STARK_EXCITED` in `run_fit.py`; e.g. Fan et al., IEEE JQE **24**, 924 (1988)):
+
+```
+2F7/2 (ground):   0, 565, 612, 785 cm^-1
+2F5/2 (excited):  10327, 10634, 10927 cm^-1
+```
+
+Every electronic line is a difference of one level from each set, so its position
+is *predicted*. Only oscillator strengths and widths are fitted. This matters:
+when the centres were free, a line drifted onto whatever residual bump was
+nearby and parked itself at 955 nm with a 52 nm width against its bound -- a
+"crystal-field line" wider than the entire manifold structure. Fixing the centres
+also makes the problem tractable; with free centres neighbouring lines are
+mutually degenerate and the fit needed 697 function evaluations instead of 45.
+
+Transitions closer than 2 nm are merged (the band is not resolved below that).
+Vibronic sidebands are declared separately and are the only oscillators allowed
+to be broad; electronic lines are capped at 0.025 eV.
+
+**The 955 nm feature is the ZPL + 150 cm^-1 phonon replica** -- 150 cm^-1 is the
+lowest YAG optical phonon. It is now an explicitly labelled vibronic sideband at
+954.5 nm rather than a floating oscillator, and the residual across 950-965 nm
+drops below the photometric floor.
+
+**The detector mask was also wrong.** It ran 965-983 nm and swallowed the real
+zero-phonon line: at 965-970 nm the inverted optical depth rises smoothly to
+`alpha*d = 0.48` at 969 nm, while only at 971-983 nm does the transmittance jump
+to 0.60-0.68 -- above the sample's own baseline (~0.58) and therefore unphysical.
+With the ZPL masked out the fit had no oscillator for the absorption climbing
+into the mask, which is what the spurious 955 nm line was compensating. The mask
+is now 971-983 nm and the ZPL is fitted.
+
 ## Results (sample B, d = 1.000 mm assumed)
 
 `n` matches Zelmon single-crystal YAG to **RMS 0.0018** (max deviation 0.0047)
-over 350-1650 nm, from a 29-parameter global model.
+over 350-1650 nm. Scattering: `C = 3.505 +/- 0.002 /cm`, `p = 0.1102 +/- 0.0010`.
+Sellmeier: UV pole 256.0 eV^2 at 10.640 eV, IR pole 0.0018 eV^2.
 
-| parameter | value | 1 sigma |
-|---|---|---|
-| UV pole amplitude | 256.5 eV^2 | 3.0 |
-| UV pole energy | 10.649 eV | 0.057 |
-| IR pole amplitude | 0.00247 eV^2 | 0.0026 |
-| scatter | C = 3.506 /cm, p = 0.1099 | 0.002 / 0.001 |
+Yb(3+) oscillators (kind: e = electronic Stark transition, v = vibronic sideband;
+all centres fixed):
 
-Yb(3+) `2F7/2 -> 2F5/2` crystal-field lines (amplitude / centre / FWHM):
+| centre (nm) | kind | A | FWHM (eV) | assignment (cm^-1) |
+|---|---|---|---|---|
+| 875.1 | v | 2.10e-6 +/- 3e-7 | 0.100* | 10927 + 500 |
+| 898.7 | v | 3.46e-6 +/- 5e-7 | 0.0368 | 10927 + 200 |
+| 915.2 | e | 1.92e-5 +/- 9e-7 | 0.0140 | 0 -> 10927 |
+| 930.5 | v | 2.11e-5 +/- 8e-7 | 0.0162 | ZPL + 420 |
+| **940.4** | e | **3.72e-5 +/- 1e-6** | 0.0118 | 0 -> 10634 (main pump band) |
+| **954.5** | v | **1.46e-5 +/- 4e-7** | 0.0831 | **ZPL + 150** |
+| 965.1 | e | 1.6e-6 +/- 1e-6 | 0.0020* | 565 -> 10927 |
+| **968.5** | e | **2.09e-5 +/- 1e-6** | 0.0040 | 0 -> 10327 (ZPL) + 612 -> 10927 |
+| 993.1 | e | 1.27e-6 +/- 1e-6 | 0.0026* | 565 -> 10634 |
+| 997.8 | e | 3.62e-6 +/- 1e-6 | 0.0062 | 612 -> 10634 |
+| 1024.4 | e | 1.51e-6 +/- 2e-6 | 0.0191 | 565 -> 10327 |
+| 1029.3 | e | 6.89e-6 +/- 2e-6 | 0.0183 | 612 -> 10327 |
+| 1048.0 | e | 2.13e-6 +/- 9e-7 | 0.0151 | 785 -> 10327 |
 
-| line | A | centre (nm) | E (eV) | Br (eV) | note |
-|---|---|---|---|---|---|
-| 1 | 2.70e-6 | 879.0 | 1.4105 | 0.070* | phonon sideband, width at bound |
-| 2 | 7.14e-6 | 910.0 | 1.3625 | 0.039 | |
-| 3 | 1.76e-5 | 914.9 | 1.3552 | 0.0091 | sharp |
-| 4 | 2.21e-5 | 930.4 | 1.3326 | 0.0199 | |
-| 5 | **3.62e-5** | **941.1** | **1.3175** | **0.0115** | main pump band |
-| 6 | 1.43e-5 | 955.2 | 1.2981 | 0.070* | width at bound |
-| 7 | 4.43e-6 | 997.3 | 1.2432 | 0.0133 | |
-| 8 | 7.64e-6 | 1029.0 | 1.2049 | 0.0254 | emission line |
+\* width at a bound; that parameter's uncertainty is not meaningful.
 
-\* widths pinned at the 0.070 eV bound are broad pedestals (phonon sidebands);
-their uncertainties are not meaningful.
+**Not detected** and dropped by the automatic prune: 986.0 nm (785->10927) and
+1015.3 nm (785->10634). Both originate on the 785 cm^-1 level, whose Boltzmann
+population at 300 K is only `exp(-785/208) = 2%`, so weakness is expected. An
+oscillator refined to zero amplitude has a width with zero gradient, which makes
+the Jacobian singular and returns NaN for *every* uncertainty in the fit -- hence
+the prune-and-refit pass (`AMP_DETECT`).
 
-The manifold is **resolved, not a smooth band**. Describing it with two or three
-broad Gaussians smears across the structure and leaves systematic transmittance
-residuals up to 0.020 at 915 nm; each oscillator is therefore confined to its own
-narrow centre window so neighbouring lines cannot merge.
-
-Transmittance residual **inside** the Yb manifold (880-1080 nm):
+Transmittance residual inside the manifold (880-1080 nm):
 
 | model | RMS | max |
 |---|---|---|
 | 3 broad Gaussians | 0.0087 | 0.0198 |
-| 8 windowed lines | **0.0026** | **0.0060** |
+| 8 free-centre lines | 0.0026 | 0.0060 |
+| **13 fixed Stark/vibronic lines** | **0.0036** | **0.0093** |
 
-which is at the 0.5% photometric floor -- nothing above 0.007 remains. Outside
-the manifold the residual is 0.0058 RMS and is dominated by the instrumental
-ripple identified above, which is not fitted by design.
+The free-centre model fits marginally better but is not physical -- its lines sit
+where the residual happens to be, not where Yb(3+) has transitions. The
+fixed-centre model is the one to quote.
 
-Per-pass optical depth: scattering `alpha*d = 0.388` (400 nm) falling to `0.335`
-(1550 nm); Yb absorption peaks at `alpha*d = 0.19` on the 941 nm band.
-
-**The near-grey scatter exponent `p = 0.110 +/- 0.001` is the main physical
-result.** The dominant loss in these samples is neither absorption nor Rayleigh
-scattering: it is almost wavelength-independent, i.e. Mie/geometric scattering
-from features comparable to or larger than the wavelength (grain boundaries,
-residual pores). That is what the earlier fit's unexplained 2-3% NIR
-transmittance gap was.
+**The near-grey scatter exponent `p = 0.110 +/- 0.001` remains the main physical
+result.** The dominant loss is neither absorption nor Rayleigh scattering: it is
+almost wavelength-independent, i.e. Mie/geometric scattering from grain-scale
+features. That is what the earlier fit's unexplained 2-3% NIR transmittance gap
+was.
 
 **Cross-validation.** Sample A, fitted transmission-only with `n` frozen at B's
-reflection result, reproduces B independently -- all eight line centres to
-< 1 nm and the scatter to < 1%:
+reflection result, reproduces B's oscillator strengths to 0.1-0.9%:
 
-| | scatter C | p | 915 nm | 941 nm | 1029 nm |
-|---|---|---|---|---|---|
-| B (R+T) | 3.506 | 0.110 | 914.9 nm, 1.76e-5 | 941.1 nm, 3.62e-5 | 1029.0 nm, 7.64e-6 |
-| A (T only) | 3.532 | 0.131 | 914.9 nm, 1.78e-5 | 941.0 nm, 3.66e-5 | 1029.7 nm, 7.27e-6 |
+| line | B | A |
+|---|---|---|
+| 915.2 nm | 1.919e-5 | 1.920e-5 |
+| 940.4 nm | 3.722e-5 | 3.693e-5 |
+| 954.5 nm (ZPL+150) | 1.462e-5 | 1.449e-5 |
+| 968.5 nm (ZPL) | 2.092e-5 | 2.090e-5 |
+| scatter C, p | 3.505, 0.110 | 3.530, 0.131 |
 
-A's Yb-band residual is 0.0025 RMS.
+## A bug worth recording
+
+`_idx("gauss12_amp")` parsed the oscillator index as `int(head[-1])` -- the
+trailing *character*. With ten or more oscillators that maps gauss10..gauss13
+onto 0..3, silently aliasing four parameters onto four others. Symptoms: every
+uncertainty NaN (singular Jacobian), amplitudes driven to absurd values, 697
+function evaluations instead of 45 -- while the printed per-line table, which
+reads `model["gaussians"]` directly, still looked plausible. Fixed, with a
+regression test in `python fit/dispersion.py` that round-trips 14 oscillators.
 
 ## Thickness
 
@@ -240,10 +283,10 @@ exports also carry a UTF-8 BOM and CRLF endings that put the header on the
 * `YbYag_B_UMMt [2026-06-16,175112]` has median `T = 0.835`, sitting at the
   lossless-slab limit -- it looks like a straight-through baseline, not a sample.
 
-Masked: 651-661 nm (grating turret change) and 965-983 nm (Si/InGaAs detector
-crossover). The crossover unfortunately sits on the Yb zero-phonon line, and the
-inverted `alpha*d` there goes *negative*, confirming it is an artefact rather
-than structure. `--keep-zpl` lifts the mask and adds a 969 nm oscillator.
+Masked: 651-661 nm (grating turret change) and 971-983 nm (Si/InGaAs detector
+crossover). The crossover sits just red of the Yb zero-phonon line; the inverted `alpha*d` inside
+971-983 nm goes *negative*, confirming it is an artefact rather than structure.
+`--keep-zpl` lifts the mask entirely.
 
 ## Known residuals
 
