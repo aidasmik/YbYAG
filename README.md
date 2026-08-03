@@ -10,10 +10,12 @@
 
 ![Pure sample B transmission offset to match A](figures/YbYAG_pure_A_B_transmission_offset_alignment.png)
 
+## Literature comparison
+
+![Measured Yb:YAG absorbance with published spectral positions](figures/YbYAG_literature_band_comparison.png)
 
 ## Photoluminescence
 Coated Samples
 ![Yb:YAG photoluminescence comparison](figures/YbYAG_photoluminescence.png)
 Sample A:
 ![Yb:YAG temperature-dependent photoluminescence](figures/YbYAG_temperature_photoluminescence.png)
-

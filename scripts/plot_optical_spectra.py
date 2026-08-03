@@ -166,7 +166,7 @@ def plot_spectra(
     if energy_axis:
         add_energy_axis(axis)
     format_axis(axis)
-    axis.legend(ncol=2)
+    axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
     figure.tight_layout()
     figure.savefig(output_path, bbox_inches="tight")
@@ -226,7 +226,12 @@ def plot_transmission_only(transmission):
             xlabel=xlabel,
             ylabel="Transmission (%T)",
         )
-        axis.legend(title="Sample")
+        axis.legend(
+            title="Sample",
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            frameon=False,
+        )
         format_axis(axis)
 
     wavelength_axis.set_xlim(780, 1220)
@@ -338,7 +343,7 @@ def plot_pure_ab_offset_alignment(transmission, absorbance):
             xlim=(800, 1200),
         )
         format_axis(axis)
-        axis.legend(loc="best")
+        axis.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
 
         figure.tight_layout()
         figure.savefig(output_path, bbox_inches="tight")
