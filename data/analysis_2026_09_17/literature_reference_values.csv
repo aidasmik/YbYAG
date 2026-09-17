@@ -1,0 +1,13 @@
+source,material,temperature_K,quantity,wavelength_nm,value,units,notes,doi
+Brown et al. (2005),Yb:YAG single crystal,300,Yb ion density per at.%,,1.385e+20,ions cm^-3 per at.%,Doping equivalence relationship reported in paper.,10.1109/JSTQE.2005.850236
+Brown et al. (2005),Yb:YAG single crystal,300,absorption peak wavelength,941.025,941.025,nm,941-nm pump band; FWHM 18.3 nm.,10.1109/JSTQE.2005.850236
+Brown et al. (2005),Yb:YAG single crystal,300,absorption FWHM,941.025,18.3,nm,941-nm pump band.,10.1109/JSTQE.2005.850236
+Brown et al. (2005),Yb:YAG single crystal,300,ZPL peak wavelength,968.825,968.825,nm,Z1-A1 zero-phonon line; FWHM 2.8 nm.,10.1109/JSTQE.2005.850236
+Brown et al. (2005),Yb:YAG single crystal,300,ZPL FWHM,968.825,2.8,nm,Z1-A1 zero-phonon line.,10.1109/JSTQE.2005.850236
+Liu et al. (2007),4.5 at.% Yb:YAG crystal rod,296,peak absorption cross section,941.2,7.89e-21,cm^2,23 C measurement; 941-nm pump band.,10.1364/JOSAB.24.002081
+"Koerner et al. (2012), fit reproduced by Zeyen thesis",Yb:YAG,300,absorption cross section,941.0,8.144830238753642e-21,cm^2,300 K value from published temperature-dependent fit.,10.1364/JOSAB.29.002493
+"Koerner et al. (2012), fit reproduced by Zeyen thesis",Yb:YAG,300,absorption cross section,969.0,7.603939016587433e-21,cm^2,300 K value from published temperature-dependent fit.,10.1364/JOSAB.29.002493
+"Koerner et al. (2012), fit reproduced by Zeyen thesis",Yb:YAG,300,absorption cross section,1030.0,1.1809999999999999e-21,cm^2,Weak ground-state reabsorption at the laser wavelength.,10.1364/JOSAB.29.002493
+De Vido et al. (2020),1.1 at.% Yb:YAG ceramic,300,ZPL peak absorption cross section,969.04,8e-21,cm^2,High-resolution ZPL measurement; FWHM 2.38 nm.,10.1364/OME.386436
+Pirri et al. (2018),10 at.% Yb:YAG ceramic comparison,300,absorption peak wavelength,939.4,939.4,nm,Yb:YAG comparison spectrum shown in Yb:YSAG study.,10.3390/ma11050837
+Pirri et al. (2018),10 at.% Yb:YAG ceramic comparison,300,ZPL peak wavelength,968.93,968.93,nm,Yb:YAG comparison spectrum shown in Yb:YSAG study.,10.3390/ma11050837
