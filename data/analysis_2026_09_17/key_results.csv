@@ -1,0 +1,13 @@
+quantity,value,units,interpretation
+good RC2 baseline 1060-1100 nm,84.05,%,physically consistent with uncoated YAG Fresnel transmission
+June 18 RC2 baseline (13:14),60.35,%,throughput/alignment loss; spectrum rescales onto good run
+June 18 RC2 baseline (13:22),59.25,%,throughput/alignment loss; spectrum rescales onto good run
+alpha at 941 nm from good transmission,1.8771763205591885,cm^-1,independent absorption anchor
+alpha at 969 nm from good transmission,1.3555179887493023,cm^-1,narrow ZPL; resolution-sensitive
+alpha at 1030 nm from good transmission,0.25468894062602465,cm^-1,weak but non-zero reabsorption missing from current B-spline
+Yb concentration inferred from 941 nm,1.7143301673904778,at.%,using Liu 2007 cross section
+Yb concentration inferred from 969 nm,1.2844969097016286,at.%,using Koerner 2012 300 K fit; likely biased low by narrow-line resolution
+Yb concentration inferred from 1030 nm,1.5539126168877146,at.%,using Koerner 2012 300 K fit
+Yb concentration inferred from PL point ratio,2.056404601840553,at.%,crude extrapolation from nominal 5->10% reference trend
+Yb concentration inferred from PL integrated-band ratio,2.446408691953449,at.%,crude extrapolation from nominal 5->10% reference trend
+working concentration range,1.5,to 2.5 at.%,optical inference only; direct composition measurement still required
