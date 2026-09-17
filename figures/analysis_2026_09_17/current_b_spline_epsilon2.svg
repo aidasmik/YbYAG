@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="648pt" height="396pt" viewBox="0 0 648 396" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata><rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><cc:Work><dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/><dc:format>image/svg+xml</dc:format></cc:Work></rdf:RDF></metadata>
+ <defs><style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style></defs>
+ <rect width="648" height="396" fill="#fff"/>
+ <g transform="translate(38.558,26.88)">
+  <rect width="585.952" height="327.16" fill="#fff" stroke="#000" stroke-width="0.8"/>
+  <g stroke="#b0b0b0" stroke-opacity="0.25" stroke-width="0.8">
+   <path d="M53.268 0V327.16 M119.854 0V327.16 M186.439 0V327.16 M253.025 0V327.16 M319.610 0V327.16 M386.196 0V327.16 M452.781 0V327.16 M519.367 0V327.16 M585.952 0V327.16"/>
+   <path d="M0 312.289H585.952 M0 250.327H585.952 M0 188.365H585.952 M0 126.403H585.952 M0 64.441H585.952 M0 2.478H585.952"/>
+  </g>
+  <path d="M0 312.289 L63.922 312.289 L71.912 293.700 L77.239 268.916 L79.903 244.131 L82.566 225.542 L87.893 175.973 L90.556 163.580 L93.220 157.384 L95.883 157.384 L98.546 163.580 L101.210 182.169 L106.537 206.953 L109.200 213.150 L111.864 213.150 L114.527 206.953 L117.190 194.561 L119.854 175.973 L125.181 151.188 L130.507 138.795 L141.161 138.795 L146.488 114.010 L151.814 76.833 L154.478 52.048 L157.141 33.460 L159.805 21.067 L162.468 14.871 L165.132 14.871 L167.795 27.263 L170.459 45.852 L173.122 70.637 L175.786 101.618 L178.449 138.795 L183.776 200.757 L189.103 250.327 L191.766 268.916 L197.093 293.700 L202.420 306.093 L207.746 306.093 L210.410 312.289 L213.073 306.093 L215.737 306.093 L218.400 299.897 L221.064 287.504 L223.727 262.719 L226.391 231.738 L231.717 144.991 L234.381 107.814 L237.044 83.029 L239.708 83.029 L242.371 107.814 L245.035 144.991 L247.698 188.365 L253.025 262.719 L258.352 299.897 L263.678 312.289 L311.620 312.289 L319.610 293.700 L326.269 262.719 L332.927 244.131 L346.244 293.700 L352.903 312.289 L585.952 312.289" fill="none" stroke="#1f77b4" stroke-width="1.5"/>
+  <g font-family="DejaVu Sans,Arial,sans-serif" font-size="10" fill="#000">
+   <text x="53.268" y="342" text-anchor="middle">900</text><text x="119.854" y="342" text-anchor="middle">925</text><text x="186.439" y="342" text-anchor="middle">950</text><text x="253.025" y="342" text-anchor="middle">975</text><text x="319.610" y="342" text-anchor="middle">1000</text><text x="386.196" y="342" text-anchor="middle">1025</text><text x="452.781" y="342" text-anchor="middle">1050</text><text x="519.367" y="342" text-anchor="middle">1075</text><text x="585.952" y="342" text-anchor="middle">1100</text>
+   <text x="-7" y="316" text-anchor="end">0</text><text x="-7" y="254" text-anchor="end">1</text><text x="-7" y="192" text-anchor="end">2</text><text x="-7" y="130" text-anchor="end">3</text><text x="-7" y="68" text-anchor="end">4</text><text x="-7" y="6" text-anchor="end">5</text>
+   <text x="293" y="365" text-anchor="middle">Wavelength (nm)</text><text transform="translate(-28,164) rotate(-90)" text-anchor="middle">ε₂</text><text x="0" y="-5">1e−5</text>
+   <text x="293" y="-10" text-anchor="middle" font-size="12">Current CompleteEASE B-spline: imaginary dielectric function</text>
+  </g>
+ </g>
+</svg>
